@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap");
+
+body {
+  @apply bg-canvas text-gray-900 min-h-screen antialiased;
+  font-family: 'Inter', 'Segoe UI', -apple-system, Roboto, sans-serif;
+}
+
+/* ── Cards ─────────────────────────────────────────── */
+.card {
+  @apply bg-white rounded-xl border border-gray-200 p-5;
+  box-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 1px 3px rgba(15,23,42,0.06);
+}
+.card-sm    { @apply bg-white rounded-lg border border-gray-200 p-4;
+              box-shadow: 0 1px 3px rgba(15,23,42,0.04); }
+.card-flush { @apply bg-white rounded-xl border border-gray-200 overflow-hidden;
+              box-shadow: 0 1px 3px rgba(15,23,42,0.04); }
+.card-hover { transition: transform .15s, box-shadow .15s; }
+.card-hover:hover { transform: translateY(-1px);
+                    box-shadow: 0 6px 18px rgba(15,23,42,0.08); }
+
+.section-header { @apply text-base font-semibold text-gray-900 mb-3; }
+
+.kpi-card { @apply bg-white rounded-xl border border-gray-200 p-4 transition-shadow;
+            box-shadow: 0 1px 3px rgba(15,23,42,0.04); }
+.kpi-card:hover { box-shadow: 0 6px 14px rgba(15,23,42,0.08); }
+
+/* ── Buttons ─────────────────────────────────────────── */
+.btn { @apply inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-semibold cursor-pointer border-0 transition-all; }
+.btn-primary   { @apply bg-primary-600 text-white hover:bg-primary-700;
+                 box-shadow: 0 1px 2px rgba(37,99,235,0.20); }
+.btn-secondary { @apply bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300; }
+.btn-ghost     { @apply text-gray-600 hover:bg-gray-100; }
+.btn-success   { @apply bg-emerald-600 text-white hover:bg-emerald-700; }
+.btn-danger    { @apply bg-red-50 text-red-700 hover:bg-red-100 border border-red-100; }
+
+/* ── Forms ─────────────────────────────────────────── */
+.input, .form-input {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none bg-white transition-colors;
+}
+.input:focus, .form-input:focus {
+  @apply border-primary-500;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+.label, .form-label { @apply block text-xs font-semibold text-gray-700 mb-1.5; }
+
+/* ── Sidebar link ──────────────────────────────────── */
+.sidebar-link { @apply flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors; }
+
+/* ── Rating pills ─────────────────────────────────── */
+.rating-pill { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold; }
+.rating-good { @apply bg-emerald-100 text-emerald-700; }
+.rating-mid  { @apply bg-amber-100 text-amber-700; }
+.rating-low  { @apply bg-rose-100 text-rose-700; }
+.rating-na   { @apply bg-gray-100 text-gray-500; }
+
+/* ── Chips ─────────────────────────────────────────── */
+.chip { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium; }
+
+/* ── Tabs ─────────────────────────────────────────── */
+.tabs-bar { @apply flex gap-1 border-b border-gray-200 overflow-x-auto; }
+.tab      { @apply px-4 py-2.5 text-sm font-medium border-b-2 -mb-px whitespace-nowrap transition-colors text-gray-500 border-transparent hover:text-primary-700 cursor-pointer; }
+.tab.active { @apply border-primary-600 text-primary-700; }
+
+/* ── Page header ──────────────────────────────────── */
+.page-title    { @apply text-2xl font-bold text-gray-900 tracking-tight; }
+.page-subtitle { @apply text-sm text-gray-500 mt-1; }
+
+/* ── Mobile ─────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .card { @apply p-4 rounded-lg; }
+  h1 { @apply text-xl; }
+  h2 { font-size: 1.375rem; }
+}
+
+@media print { .no-print { display: none !important; } }

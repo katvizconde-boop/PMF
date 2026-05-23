@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>PMF System — Quick FAQ · SevenGen</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', -apple-system, Roboto, Arial, sans-serif;
+    color: #1a1a1a;
+    background: #f8fafc;
+    padding: 24px;
+    font-size: 11px;
+    line-height: 1.4;
+  }
+  .page {
+    max-width: 1100px;
+    margin: 0 auto;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #1e3a5a 0%, #0033ff 100%);
+    color: #fff;
+    padding: 18px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-mark {
+    width: 36px; height: 36px; background: #0033ff; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 800; letter-spacing: -.04em;
+  }
+  .brand-name { font-size: 22px; font-weight: 800; letter-spacing: -.02em; }
+  .brand-name .gen { color: #00c3ff; }
+  .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
+  .header-meta { font-size: 11px; opacity: .85; text-align: right; }
+
+  /* Title bar */
+  .title-bar {
+    padding: 14px 28px 10px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .title-bar h2 {
+    margin: 0; font-size: 24px; color: #1e3a5a; font-weight: 800;
+  }
+  .title-bar p { margin: 4px 0 0; color: #64748b; font-size: 12px; }
+
+  /* Body */
+  .body {
+    padding: 16px 28px;
+    column-count: 2;
+    column-gap: 24px;
+  }
+  .section { break-inside: avoid; margin-bottom: 14px; }
+  .section h3 {
+    margin: 0 0 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #0033ff;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    padding-bottom: 4px;
+    border-bottom: 2px solid #00c3ff;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .qa { margin-bottom: 10px; break-inside: avoid; }
+  .q {
+    font-weight: 700;
+    color: #1e3a5a;
+    margin: 0 0 2px;
+    font-size: 11.5px;
+  }
+  .q::before {
+    content: "Q ";
+    color: #0033ff;
+    font-weight: 800;
+  }
+  .a {
+    color: #475569;
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  /* Footer */
+  .footer {
+    background: #1e3a5a;
+    color: #cbd5e1;
+    padding: 14px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+  }
+  .footer a { color: #00c3ff; text-decoration: none; font-weight: 600; }
+  .footer .url {
+    background: rgba(255,255,255,.1);
+    padding: 6px 12px;
+    border-radius: 6px;
+    color: #fff;
+    font-weight: 700;
+    font-family: Consolas, monospace;
+  }
+
+  /* Print actions (hidden when printing) */
+  .actions {
+    max-width: 1100px; margin: 0 auto 14px;
+    display: flex; justify-content: flex-end; gap: 8px;
+  }
+  .btn {
+    background: #0033ff; color: #fff;
+    border: 0; padding: 8px 14px; border-radius: 6px;
+    font-weight: 600; font-size: 12px; cursor: pointer;
+    text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn:hover { background: #001fb3; }
+  .btn-ghost { background: #fff; color: #1e3a5a; border: 1px solid #cbd5e1; }
+  .btn-ghost:hover { background: #f1f5f9; }
+
+  /* Print */
+  @media print {
+    body { background: #fff; padding: 0; font-size: 9.5px; }
+    .actions { display: none; }
+    .page { box-shadow: none; border-radius: 0; }
+    .header { background: #1e3a5a !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .footer { background: #1e3a5a !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .body { padding: 10px 22px; column-gap: 18px; }
+    .section { margin-bottom: 9px; }
+    .qa { margin-bottom: 6px; }
+    .q { font-size: 10px; }
+    .a { font-size: 9.5px; line-height: 1.35; }
+    .section h3 { font-size: 10px; margin-bottom: 5px; }
+    @page { size: letter; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="actions">
+  <button class="btn btn-ghost" onclick="window.print()">🖨 Print / Save as PDF</button>
+  <a class="btn" href="https://sevengen.vercel.app">🌐 Open the App</a>
+</div>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="brand">
+      <div class="brand-mark">7</div>
+      <div class="brand-name">seven<span class="gen">gen</span></div>
+    </div>
+    <div class="header-meta">
+      <strong>PMF System</strong><br/>
+      Quick FAQ · v1.0
+    </div>
+  </div>
+
+  <!-- TITLE -->
+  <div class="title-bar">
+    <h2>Frequently Asked Questions</h2>
+    <p>Your one-page reference for the new Performance Management Form System. Print it, pin it, share it.</p>
+  </div>
+
+  <!-- BODY (2 columns) -->
+  <div class="body">
+
+    <div class="section">
+      <h3>🔐 Getting Started</h3>
+      <div class="qa">
+        <p class="q">How do I log in?</p>
+        <p class="a">Open <strong>sevengen.vercel.app</strong> in any browser. Use your @sevengen.com email + the temporary password from HR (<code>password123</code>). Or click "Sign in with Microsoft 365".</p>
+      </div>
+      <div class="qa">
+        <p class="q">I forgot my password — what now?</p>
+        <p class="a">Email HR or use Microsoft 365 SSO. HR can reset it for you in under 5 minutes.</p>
+      </div>
+      <div class="qa">
+        <p class="q">Can I use my phone?</p>
+        <p class="a">Yes. The app is fully mobile-responsive. Works in Chrome, Safari, or any modern browser.</p>
+      </div>
+      <div class="qa">
+        <p class="q">Do I need to install anything?</p>
+        <p class="a">No. It's a website — no apps to install, no IT ticket needed.</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>✍️ Doing My PMF</h3>
+      <div class="qa">
+        <p class="q">How long does it take?</p>
+        <p class="a">About <strong>15 minutes</strong> for your self-assessment. You can save and finish later — everything auto-saves as you type.</p>
+      </div>
+      <div class="qa">
+        <p class="q">Can I edit my answers after submitting?</p>
+        <p class="a">No — once submitted, it's locked. But you can save drafts unlimited times before submitting. Take your time.</p>
+      </div>
+      <div class="qa">
+        <p class="q">What if I want to skip a question?</p>
+        <p class="a">Required ratings can't be skipped, but text fields are mostly optional. Required items are marked with a red <strong>*</strong>.</p>
+      </div>
+      <div class="qa">
+        <p class="q">Do I really need to draw a signature?</p>
+        <p class="a">Yes — it's your formal sign-off, legally equivalent to ink on paper. Use mouse or finger on mobile. You can clear and redraw anytime.</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>🔒 Privacy & Security</h3>
+      <div class="qa">
+        <p class="q">Who can see my evaluation?</p>
+        <p class="a"><strong>Only:</strong> you, your direct manager, and HR Admin. Other employees <strong>cannot</strong> see your scores or comments. Period.</p>
+      </div>
+      <div class="qa">
+        <p class="q">Where is my data stored?</p>
+        <p class="a">In a secure cloud database hosted in <strong>Singapore</strong> (Asia region). Encrypted in transit (HTTPS) and at rest.</p>
+      </div>
+      <div class="qa">
+        <p class="q">Is access logged?</p>
+        <p class="a">Yes. Every view, edit, save, and download is logged with timestamp and user. You can request the audit trail on your data anytime.</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>📊 After Submitting</h3>
+      <div class="qa">
+        <p class="q">How long before I see feedback?</p>
+        <p class="a">Manager reviews typically 1–2 weeks; HR final approval 1 week. You'll get email + bell notifications at every stage.</p>
+      </div>
+      <div class="qa">
+        <p class="q">Will I see my manager's comments?</p>
+        <p class="a">Yes — once HR finalizes, the full feedback (ratings + justifications) becomes visible on your dashboard.</p>
+      </div>
+      <div class="qa">
+        <p class="q">Can I download / print my PMF?</p>
+        <p class="a">Yes. After finalization, click <strong>🖨 Print / Export PDF</strong> on the form. Get a branded, signature-ready PDF.</p>
+      </div>
+      <div class="qa">
+        <p class="q">Can my manager change my self-rating?</p>
+        <p class="a">Never. Your self-rating is yours. Your manager rates separately in their own column.</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>🎉 Bonus Features</h3>
+      <div class="qa">
+        <p class="q">What are Kudos?</p>
+        <p class="a">Public recognition you can send to anyone in any of the 4 companies, anytime. Categories like Collaboration, Excellence, Innovation. Visible on the Kudos wall.</p>
+      </div>
+      <div class="qa">
+        <p class="q">Where do I see my career path?</p>
+        <p class="a">Open your Profile → see <strong>Career Path</strong> section. Shows your role's ladder, your current level, target level, and skills needed.</p>
+      </div>
+      <div class="qa">
+        <p class="q">How do goals work?</p>
+        <p class="a">Set quarterly goals at cycle start. Track progress (Active → Achieved → Missed). Manager rates them at cycle end.</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>💬 Need Help?</h3>
+      <div class="qa">
+        <p class="q">There's a built-in tour</p>
+        <p class="a">Profile → 🎓 <strong>Restart Tour</strong> for a 60-second walkthrough.</p>
+      </div>
+      <div class="qa">
+        <p class="q">Email HR</p>
+        <p class="a"><strong>hr@sevengen.com</strong> — response within 4 business hours.</p>
+      </div>
+      <div class="qa">
+        <p class="q">Talk to your manager</p>
+        <p class="a">Many questions about ratings are best handled person-to-person. Schedule a 15-min walk-through.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div>
+      <strong>seven</strong><span style="color:#00c3ff;"><strong>gen</strong></span>
+      &nbsp;·&nbsp;
+      Performance Management
+    </div>
+    <div class="url">sevengen.vercel.app</div>
+    <div>Questions? <a href="mailto:hr@sevengen.com">hr@sevengen.com</a></div>
+  </div>
+
+</div>
+
+</body>
+</html>

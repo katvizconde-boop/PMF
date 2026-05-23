@@ -1,0 +1,6 @@
+firstName,lastName,email,position,company,department,role,employmentType,managerEmail,hireDate
+Juan,Dela Cruz,juan.delacruz@company.com,Content Writer,M2.0 Communications,Content Team,EMPLOYEE,REGULAR,patricia@company.com,2025-06-15
+Maria,Reyes,maria.reyes@company.com,Junior Analyst,Media Meter Inc,Operations Team,EMPLOYEE,PROBATIONARY,martin@company.com,2026-03-01
+Pedro,Santos,pedro.santos@company.com,Backend Engineer,7GEN,Back End Team,EMPLOYEE,REGULAR,manager@company.com,2024-09-10
+Ana,Lopez,ana.lopez@company.com,Reports Analyst,Rythmos DB Inc.,SG Reports,EMPLOYEE,REGULAR,vince@company.com,2025-01-20
+Sofia,Cruz,sofia.cruz@company.com,Team Lead,7GEN,Front End and QA Team,MANAGER,REGULAR,hr@company.com,2023-04-15
