@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import { Icon } from "./Icons";
+import { PrintSectionButton } from "./PrintSectionButton";
 
 type Step = { id: string; title: string; level: number; yearsTypical: string | null; skills: string; responsibilities: string | null; sortOrder: number };
 type Path = { id: string; name: string; company: string | null; description: string | null; steps: Step[] };
@@ -64,10 +66,13 @@ export function CareerPathSection({ employeeId, canEdit }: { employeeId: string;
   const selectedPath = paths.find((p) => p.id === form.pathId);
 
   return (
-    <div className="card">
+    <div className="card printable-careerpath">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="section-header mb-0">📚 Career Path / Development Plan</h3>
-        {canEdit && !editing && <button className="btn btn-secondary text-xs" onClick={() => setEditing(true)}>{progress?.currentPath ? "Edit" : "Set Path"}</button>}
+        <h3 className="section-header mb-0 inline-flex items-center gap-1"><Icon.GraduationCap size={16} /> Career Path / Development Plan</h3>
+        <div className="inline-flex items-center gap-2">
+          <PrintSectionButton sectionId="careerpath" label="career path" />
+          {canEdit && !editing && <button className="btn btn-secondary text-xs" onClick={() => setEditing(true)}>{progress?.currentPath ? "Edit" : "Set Path"}</button>}
+        </div>
       </div>
 
       {!editing && progress?.currentPath ? (
@@ -90,8 +95,8 @@ export function CareerPathSection({ employeeId, canEdit }: { employeeId: string;
                         reached ? "border-emerald-200 bg-emerald-50/50" :
                         "border-gray-200 bg-gray-50"
                       }`}>
-                        {isCurrent && <div className="text-[10px] font-bold text-emerald-700 uppercase tracking-wide mb-1">📍 You're here</div>}
-                        {isTarget && <div className="text-[10px] font-bold text-primary-700 uppercase tracking-wide mb-1">🎯 Target</div>}
+                        {isCurrent && <div className="text-[10px] font-bold text-emerald-700 uppercase tracking-wide mb-1 inline-flex items-center gap-1"><Icon.Target size={10} /> You're here</div>}
+                        {isTarget && <div className="text-[10px] font-bold text-primary-700 uppercase tracking-wide mb-1 inline-flex items-center gap-1"><Icon.Target size={10} /> Target</div>}
                         <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Level {s.level}</div>
                         <div className="font-bold text-gray-900 text-sm mt-0.5">{s.title}</div>
                         {s.yearsTypical && <div className="text-xs text-gray-500 mt-1">{s.yearsTypical}</div>}
@@ -127,14 +132,14 @@ export function CareerPathSection({ employeeId, canEdit }: { employeeId: string;
           {selectedPath && (
             <div className="grid md:grid-cols-2 gap-3">
               <div>
-                <label className="label">📍 Current Level</label>
+                <label className="label inline-flex items-center gap-1"><Icon.Target size={12} /> Current Level</label>
                 <select className="input text-sm" value={form.currentStepId} onChange={(e) => setForm({ ...form, currentStepId: e.target.value })}>
                   <option value="">— Select —</option>
                   {selectedPath.steps.map((s) => <option key={s.id} value={s.id}>L{s.level} · {s.title}</option>)}
                 </select>
               </div>
               <div>
-                <label className="label">🎯 Target Level (next move)</label>
+                <label className="label inline-flex items-center gap-1"><Icon.Target size={12} /> Target Level (next move)</label>
                 <select className="input text-sm" value={form.targetStepId} onChange={(e) => setForm({ ...form, targetStepId: e.target.value })}>
                   <option value="">— Select —</option>
                   {selectedPath.steps.map((s) => <option key={s.id} value={s.id}>L{s.level} · {s.title}</option>)}

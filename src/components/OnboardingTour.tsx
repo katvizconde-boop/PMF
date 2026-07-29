@@ -2,14 +2,16 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { DataPrivacyContent } from "./DataPrivacyModal";
+import { Icon } from "./Icons";
 
 type Role = "HR_ADMIN" | "MANAGER" | "EMPLOYEE";
-type Step = { icon: string; title: string; body: React.ReactNode; cta?: { label: string; href: string }; requireConsent?: boolean };
+type IconComp = React.ComponentType<{ size?: number; className?: string }>;
+type Step = { icon: IconComp; title: string; body: React.ReactNode; cta?: { label: string; href: string }; requireConsent?: boolean };
 
 const STEPS: Record<Role, Step[]> = {
   HR_ADMIN: [
     {
-      icon: "🔒",
+      icon: Icon.Lock,
       title: "Data Privacy Policy",
       requireConsent: true,
       body: (
@@ -19,7 +21,7 @@ const STEPS: Record<Role, Step[]> = {
       ),
     },
     {
-      icon: "👋",
+      icon: Icon.Sparkle,
       title: "Welcome to the PMF System",
       body: (
         <>
@@ -29,7 +31,7 @@ const STEPS: Record<Role, Step[]> = {
       ),
     },
     {
-      icon: "📊",
+      icon: Icon.BarChart,
       title: "Your Dashboard",
       body: (
         <>
@@ -37,15 +39,15 @@ const STEPS: Record<Role, Step[]> = {
           <ul className="list-disc ml-4 mt-2 space-y-1 text-sm">
             <li><b>KPI cards</b> — total users, evaluations, completion rate, team average</li>
             <li><b>Charts</b> — score distribution, performance trends, top performers</li>
-            <li><b>🪂 Flight Risk</b> — auto-flags employees with declining scores</li>
-            <li><b>⚠️ Probation Alerts</b> — never miss a regularization deadline</li>
-            <li><b>🎉 Anniversaries</b> — work anniversary reminders</li>
+            <li><b>Flight Risk</b> — auto-flags employees with declining scores</li>
+            <li><b>Probation Alerts</b> — never miss a regularization deadline</li>
+            <li><b>Anniversaries</b> — work anniversary reminders</li>
           </ul>
         </>
       ),
     },
     {
-      icon: "👥",
+      icon: Icon.Users,
       title: "Employees",
       body: (
         <>
@@ -61,7 +63,7 @@ const STEPS: Record<Role, Step[]> = {
       cta: { label: "Go to Employees", href: "/employees" },
     },
     {
-      icon: "📋",
+      icon: Icon.Clipboard,
       title: "Templates",
       body: (
         <>
@@ -75,35 +77,35 @@ const STEPS: Record<Role, Step[]> = {
       ),
     },
     {
-      icon: "📈",
+      icon: Icon.LineChart,
       title: "Insights & Analytics",
       body: (
         <>
           <p>Three powerful views for HR analytics:</p>
           <ul className="list-disc ml-4 mt-2 space-y-1 text-sm">
-            <li><b>📈 Team Profile</b> — every employee's scores side-by-side</li>
-            <li><b>🗺️ Heat Map</b> — department × cycle color grid</li>
-            <li><b>📜 Compliance</b> — DOLE-friendly tenure, probation, training reports — exportable to CSV</li>
+            <li><b>Team Profile</b> — every employee's scores side-by-side</li>
+            <li><b>Heat Map</b> — department × cycle color grid</li>
+            <li><b>Compliance</b> — DOLE-friendly tenure, probation, training reports — exportable to CSV</li>
           </ul>
         </>
       ),
     },
     {
-      icon: "🎉",
+      icon: Icon.Trophy,
       title: "Engagement Tools",
       body: (
         <>
           <p>Keep employees engaged year-round, not just at review time:</p>
           <ul className="list-disc ml-4 mt-2 space-y-1 text-sm">
-            <li><b>🎉 Kudos</b> — public recognition wall</li>
-            <li><b>📚 Career Paths</b> — define ladders so employees see their roadmap</li>
-            <li><b>🔔 Notification bell</b> — top right corner, real-time alerts</li>
+            <li><b>Kudos</b> — public recognition wall</li>
+            <li><b>Career Paths</b> — define ladders so employees see their roadmap</li>
+            <li><b>Notification bell</b> — top right corner, real-time alerts</li>
           </ul>
         </>
       ),
     },
     {
-      icon: "⚙️",
+      icon: Icon.Settings,
       title: "Admin Power Tools",
       body: (
         <>
@@ -119,13 +121,13 @@ const STEPS: Record<Role, Step[]> = {
       ),
     },
     {
-      icon: "🚀",
+      icon: Icon.Send,
       title: "You're all set!",
       body: (
         <>
           <p>Everything you need is in the left sidebar.</p>
-          <p className="mt-2 text-sm">If you ever need to see this tour again, click <b>👤 My Profile → 🎓 Restart Tour</b>.</p>
-          <p className="mt-2 text-sm">Questions? The audit log captures every action and is searchable from <b>⚙️ Settings</b>.</p>
+          <p className="mt-2 text-sm">If you ever need to see this tour again, click <b>My Profile → Restart Tour</b>.</p>
+          <p className="mt-2 text-sm">Questions? The audit log captures every action and is searchable from <b>Settings</b>.</p>
         </>
       ),
     },
@@ -133,7 +135,7 @@ const STEPS: Record<Role, Step[]> = {
 
   MANAGER: [
     {
-      icon: "🔒",
+      icon: Icon.Lock,
       title: "Data Privacy Policy",
       requireConsent: true,
       body: (
@@ -143,7 +145,7 @@ const STEPS: Record<Role, Step[]> = {
       ),
     },
     {
-      icon: "👋",
+      icon: Icon.Sparkle,
       title: "Welcome to the PMF System",
       body: (
         <>
@@ -153,7 +155,7 @@ const STEPS: Record<Role, Step[]> = {
       ),
     },
     {
-      icon: "📊",
+      icon: Icon.BarChart,
       title: "Your Dashboard",
       body: (
         <>
@@ -168,7 +170,7 @@ const STEPS: Record<Role, Step[]> = {
       ),
     },
     {
-      icon: "📈",
+      icon: Icon.LineChart,
       title: "Team Profile",
       body: (
         <>
@@ -179,14 +181,14 @@ const STEPS: Record<Role, Step[]> = {
       cta: { label: "Open Team Profile", href: "/team-compare" },
     },
     {
-      icon: "✨",
+      icon: Icon.Sparkle,
       title: "AI Feedback Drafting",
       body: (
         <>
           <p>When evaluating a team member:</p>
           <ul className="list-disc ml-4 mt-2 space-y-1 text-sm">
             <li>Pick the rating</li>
-            <li>Click the <b>✨ AI Draft</b> button</li>
+            <li>Click the <b>AI Draft</b> button</li>
             <li>The AI generates a justification, summary, or development goals based on your ratings</li>
             <li>Edit anything you want — or use as-is</li>
           </ul>
@@ -195,26 +197,26 @@ const STEPS: Record<Role, Step[]> = {
       ),
     },
     {
-      icon: "🎉",
+      icon: Icon.Trophy,
       title: "Kudos & Engagement",
       body: (
         <>
           <p>Recognize great work <b>any time</b>, not just at review:</p>
           <ul className="list-disc ml-4 mt-2 space-y-1 text-sm">
-            <li><b>🎉 Kudos</b> — drop a quick shout-out, public or private</li>
-            <li><b>📔 1:1 Meeting Notes</b> — shared notepad with each direct report (on their profile)</li>
-            <li><b>📚 Career Paths</b> — set their current and target levels</li>
+            <li><b>Kudos</b> — drop a quick shout-out, public or private</li>
+            <li><b>1:1 Meeting Notes</b> — shared notepad with each direct report (on their profile)</li>
+            <li><b>Career Paths</b> — set their current and target levels</li>
           </ul>
         </>
       ),
     },
     {
-      icon: "🚀",
+      icon: Icon.Send,
       title: "You're all set!",
       body: (
         <>
           <p>Everything you need is in the left sidebar.</p>
-          <p className="mt-2 text-sm">To re-watch this tour, go to <b>👤 My Profile → 🎓 Restart Tour</b>.</p>
+          <p className="mt-2 text-sm">To re-watch this tour, go to <b>My Profile → Restart Tour</b>.</p>
         </>
       ),
     },
@@ -222,7 +224,7 @@ const STEPS: Record<Role, Step[]> = {
 
   EMPLOYEE: [
     {
-      icon: "🔒",
+      icon: Icon.Lock,
       title: "Data Privacy Policy",
       requireConsent: true,
       body: (
@@ -232,7 +234,7 @@ const STEPS: Record<Role, Step[]> = {
       ),
     },
     {
-      icon: "👋",
+      icon: Icon.Sparkle,
       title: "Welcome!",
       body: (
         <>
@@ -242,21 +244,21 @@ const STEPS: Record<Role, Step[]> = {
       ),
     },
     {
-      icon: "📊",
+      icon: Icon.BarChart,
       title: "Your Dashboard",
       body: (
         <>
           <p>Your dashboard shows:</p>
           <ul className="list-disc ml-4 mt-2 space-y-1 text-sm">
-            <li><b>📋 Your PMFs</b> — past, current, and pending</li>
-            <li><b>🔔 Alerts</b> — when a self-assessment is due</li>
-            <li><b>⭐ Your latest score</b></li>
+            <li><b>Your PMFs</b> — past, current, and pending</li>
+            <li><b>Alerts</b> — when a self-assessment is due</li>
+            <li><b>Your latest score</b></li>
           </ul>
         </>
       ),
     },
     {
-      icon: "✍️",
+      icon: Icon.Pen,
       title: "Filling out a PMF",
       body: (
         <>
@@ -272,7 +274,7 @@ const STEPS: Record<Role, Step[]> = {
       ),
     },
     {
-      icon: "🎉",
+      icon: Icon.Trophy,
       title: "Kudos",
       body: (
         <>
@@ -282,11 +284,11 @@ const STEPS: Record<Role, Step[]> = {
       cta: { label: "Try Kudos", href: "/kudos" },
     },
     {
-      icon: "👤",
+      icon: Icon.User,
       title: "Your Profile",
       body: (
         <>
-          <p>From <b>👤 My Profile</b> you can:</p>
+          <p>From <b>My Profile</b> you can:</p>
           <ul className="list-disc ml-4 mt-2 space-y-1 text-sm">
             <li>Update your photo, name, contact info</li>
             <li><b>Change your password</b></li>
@@ -296,7 +298,7 @@ const STEPS: Record<Role, Step[]> = {
       ),
     },
     {
-      icon: "🚀",
+      icon: Icon.Send,
       title: "You're all set!",
       body: <p>That's it. Welcome to the team!</p>,
     },
@@ -347,7 +349,7 @@ export function OnboardingTour({ role, alreadyCompleted, forceOpen = false, onCl
         {/* Gradient header */}
         <div className="relative bg-gradient-to-br from-primary-600 via-primary-500 to-blue-400 p-6 text-white">
           <button onClick={skip} className="absolute top-3 right-3 text-white/80 hover:text-white text-sm">Skip tour</button>
-          <div className="text-5xl mb-2">{step.icon}</div>
+          <div className="mb-2">{(() => { const IC = step.icon; return <IC size={48} />; })()}</div>
           <h2 className="text-2xl font-bold">{step.title}</h2>
         </div>
 
@@ -393,7 +395,7 @@ export function OnboardingTour({ role, alreadyCompleted, forceOpen = false, onCl
               disabled={!!step.requireConsent && !consents[stepIdx]}
               className="btn btn-primary text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLast ? "Get Started 🚀" : "Next →"}
+              {isLast ? <span className="inline-flex items-center gap-1">Get Started <Icon.Send size={14} /></span> : "Next →"}
             </button>
           </div>
         </div>

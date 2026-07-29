@@ -1,5 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
+import { Icon } from "./Icons";
+import { ONE_ON_ONE_TEMPLATES, templateToAgenda } from "@/lib/oneOnOneTemplates";
+import { PrintSectionButton } from "./PrintSectionButton";
 
 type Meeting = {
   id: string; scheduledAt: string; agenda: string | null; notes: string | null;
@@ -12,6 +15,21 @@ export function OneOnOnesSection({ employeeId, currentUserCanEdit }: { employeeI
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   const [form, setForm] = useState({ scheduledAt: "", agenda: "", notes: "", actionItems: "" });
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+
+  function applyTemplate(templateId: string) {
+    setSelectedTemplate(templateId);
+    if (!templateId) return;
+    const template = ONE_ON_ONE_TEMPLATES.find((t) => t.id === templateId);
+    if (!template) return;
+    // Replace agenda (with confirm if user already has content)
+    if (form.agenda && form.agenda.trim().length > 0) {
+      if (!confirm("Replace the current agenda with the template? Existing text will be lost.")) {
+        return;
+      }
+    }
+    setForm((f) => ({ ...f, agenda: templateToAgenda(template) }));
+  }
 
   async function load() {
     const res = await fetch(`/api/oneonones?employeeId=${employeeId}`);
@@ -25,8 +43,12 @@ export function OneOnOnesSection({ employeeId, currentUserCanEdit }: { employeeI
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ employeeId, ...form }),
     });
-    if (res.ok) { setAdding(false); setForm({ scheduledAt: "", agenda: "", notes: "", actionItems: "" }); load(); }
-    else alert(await res.text());
+    if (res.ok) {
+      setAdding(false);
+      setSelectedTemplate("");
+      setForm({ scheduledAt: "", agenda: "", notes: "", actionItems: "" });
+      load();
+    } else alert(await res.text());
   }
 
   async function update(id: string, patch: any) {
@@ -43,10 +65,13 @@ export function OneOnOnesSection({ employeeId, currentUserCanEdit }: { employeeI
   }
 
   return (
-    <div className="card">
+    <div className="card printable-onones">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="section-header mb-0">📔 1:1 Meeting Notes</h3>
-        {currentUserCanEdit && !adding && <button className="btn btn-primary text-xs" onClick={() => setAdding(true)}>+ New 1:1</button>}
+        <h3 className="section-header mb-0 inline-flex items-center gap-1"><Icon.Doc size={16} /> 1:1 Meeting Notes</h3>
+        <div className="inline-flex items-center gap-2">
+          <PrintSectionButton sectionId="onones" label="1:1 notes" />
+          {currentUserCanEdit && !adding && <button className="btn btn-primary text-xs" onClick={() => setAdding(true)}>+ New 1:1</button>}
+        </div>
       </div>
 
       {adding && (
@@ -56,10 +81,33 @@ export function OneOnOnesSection({ employeeId, currentUserCanEdit }: { employeeI
               <label className="label">Date & Time</label>
               <input type="datetime-local" className="input text-sm" required value={form.scheduledAt} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })} />
             </div>
+            <div>
+              <label className="label inline-flex items-center gap-1">
+                <Icon.Clipboard size={12} /> Use a template (optional)
+              </label>
+              <select
+                className="input text-sm"
+                value={selectedTemplate}
+                onChange={(e) => applyTemplate(e.target.value)}
+              >
+                <option value="">— Choose a template —</option>
+                {ONE_ON_ONE_TEMPLATES.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                    {t.company ? `  ·  ${t.company}` : ""}
+                  </option>
+                ))}
+              </select>
+              {selectedTemplate && selectedTemplate !== "blank" && (
+                <p className="text-[11px] text-primary-600 italic mt-1">
+                  {ONE_ON_ONE_TEMPLATES.find((t) => t.id === selectedTemplate)?.description}
+                </p>
+              )}
+            </div>
           </div>
           <div>
             <label className="label">Agenda</label>
-            <textarea className="input text-sm" rows={2} placeholder="What will you talk about?" value={form.agenda} onChange={(e) => setForm({ ...form, agenda: e.target.value })} />
+            <textarea className="input text-sm font-mono" rows={selectedTemplate && selectedTemplate !== "blank" ? 12 : 2} placeholder="What will you talk about? (or pick a template above)" value={form.agenda} onChange={(e) => setForm({ ...form, agenda: e.target.value })} />
           </div>
           <div>
             <label className="label">Notes</label>
@@ -70,7 +118,7 @@ export function OneOnOnesSection({ employeeId, currentUserCanEdit }: { employeeI
             <textarea className="input text-sm" rows={2} placeholder="• Item 1&#10;• Item 2" value={form.actionItems} onChange={(e) => setForm({ ...form, actionItems: e.target.value })} />
           </div>
           <div className="flex justify-end gap-2">
-            <button type="button" className="btn btn-secondary text-xs" onClick={() => setAdding(false)}>Cancel</button>
+            <button type="button" className="btn btn-secondary text-xs" onClick={() => { setAdding(false); setSelectedTemplate(""); }}>Cancel</button>
             <button type="submit" className="btn btn-primary text-xs">Save 1:1</button>
           </div>
         </form>
@@ -84,7 +132,7 @@ export function OneOnOnesSection({ employeeId, currentUserCanEdit }: { employeeI
             <div key={m.id} className="border border-gray-200 rounded-lg p-3 hover:shadow-sm transition">
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">📅</span>
+                  <Icon.Calendar size={18} />
                   <div>
                     <div className="text-sm font-semibold text-gray-800">
                       {new Date(m.scheduledAt).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
@@ -96,10 +144,10 @@ export function OneOnOnesSection({ employeeId, currentUserCanEdit }: { employeeI
                 </div>
                 <div className="flex items-center gap-2">
                   {m.completedAt
-                    ? <span className="chip bg-emerald-100 text-emerald-700">✓ Done</span>
+                    ? <span className="chip bg-emerald-100 text-emerald-700 inline-flex items-center gap-1"><Icon.Check size={12} /> Done</span>
                     : currentUserCanEdit && <button className="text-xs text-emerald-600 hover:underline" onClick={() => update(m.id, { completed: true })}>Mark done</button>}
                   {currentUserCanEdit && <button className="text-xs text-gray-400 hover:text-gray-700" onClick={() => setEditing(editing === m.id ? null : m.id)}>{editing === m.id ? "Close" : "Edit"}</button>}
-                  {currentUserCanEdit && <button className="text-xs text-gray-400 hover:text-red-600" onClick={() => remove(m.id)}>✕</button>}
+                  {currentUserCanEdit && <button className="text-xs text-gray-400 hover:text-red-600" onClick={() => remove(m.id)}><Icon.X size={12} /></button>}
                 </div>
               </div>
               {editing === m.id ? (

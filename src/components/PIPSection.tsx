@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import { Icon } from "./Icons";
+import { PrintSectionButton } from "./PrintSectionButton";
 
 type PIP = {
   id: string; startDate: string; endDate: string; status: string;
@@ -8,11 +10,11 @@ type PIP = {
 };
 
 const STATUS = {
-  ACTIVE:        { label: "ACTIVE",        color: "bg-amber-100 text-amber-700",    icon: "⚠️" },
-  SUCCESSFUL:    { label: "SUCCESSFUL",    color: "bg-emerald-100 text-emerald-700", icon: "✅" },
-  UNSUCCESSFUL:  { label: "UNSUCCESSFUL",  color: "bg-red-100 text-red-700",         icon: "❌" },
-  EXTENDED:      { label: "EXTENDED",      color: "bg-purple-100 text-purple-700",   icon: "📅" },
-  CANCELLED:     { label: "CANCELLED",     color: "bg-gray-100 text-gray-600",       icon: "🚫" },
+  ACTIVE:        { label: "ACTIVE",        color: "bg-amber-100 text-amber-700",    Icon: Icon.Alert },
+  SUCCESSFUL:    { label: "SUCCESSFUL",    color: "bg-emerald-100 text-emerald-700", Icon: Icon.CheckCircle },
+  UNSUCCESSFUL:  { label: "UNSUCCESSFUL",  color: "bg-red-100 text-red-700",         Icon: Icon.X },
+  EXTENDED:      { label: "EXTENDED",      color: "bg-purple-100 text-purple-700",   Icon: Icon.Calendar },
+  CANCELLED:     { label: "CANCELLED",     color: "bg-gray-100 text-gray-600",       Icon: Icon.X },
 };
 
 export function PIPSection({ employeeId, currentUserCanEdit }: { employeeId: string; currentUserCanEdit: boolean }) {
@@ -31,16 +33,19 @@ export function PIPSection({ employeeId, currentUserCanEdit }: { employeeId: str
   }
 
   return (
-    <div className="card">
+    <div className="card printable-pip">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="section-header mb-0">🚨 Performance Improvement Plans</h3>
-        {currentUserCanEdit && !adding && <button className="btn btn-danger text-xs" onClick={() => setAdding(true)}>+ Start PIP</button>}
+        <h3 className="section-header mb-0 inline-flex items-center gap-1"><Icon.Alert size={16} className="text-amber-600" /> Performance Improvement Plans</h3>
+        <div className="inline-flex items-center gap-2">
+          <PrintSectionButton sectionId="pip" label="PIPs" />
+          {currentUserCanEdit && !adding && <button className="btn btn-danger text-xs" onClick={() => setAdding(true)}>+ Start PIP</button>}
+        </div>
       </div>
 
       {adding && <NewPIPForm employeeId={employeeId} onClose={() => setAdding(false)} onSaved={() => { setAdding(false); load(); }} />}
 
       {items.length === 0 ? (
-        <p className="text-gray-400 text-sm text-center py-6">No PIPs on record. (That's a good thing 🌱)</p>
+        <p className="text-gray-400 text-sm text-center py-6 inline-flex items-center justify-center gap-1">No PIPs on record. (That's a good thing <Icon.Sprout size={14} className="text-emerald-500" />)</p>
       ) : (
         <div className="space-y-3">
           {items.map((p) => {
@@ -53,7 +58,7 @@ export function PIPSection({ employeeId, currentUserCanEdit }: { employeeId: str
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className={`chip ${s.color}`}>{s.icon} {s.label}</span>
+                      <span className={`chip ${s.color} inline-flex items-center gap-1`}><s.Icon size={12} /> {s.label}</span>
                       {p.status === "ACTIVE" && (
                         <span className="text-xs text-gray-500">{daysLeft >= 0 ? `${daysLeft} days remaining` : `${-daysLeft} days overdue`}</span>
                       )}
@@ -116,7 +121,7 @@ function NewPIPForm({ employeeId, onClose, onSaved }: { employeeId: string; onCl
 
   return (
     <form onSubmit={submit} className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg space-y-2">
-      <div className="text-xs text-red-700 font-semibold mb-2">⚠️ Starting a PIP is a formal action that will be auditable.</div>
+      <div className="text-xs text-red-700 font-semibold mb-2 inline-flex items-center gap-1"><Icon.Alert size={12} className="text-amber-600" /> Starting a PIP is a formal action that will be auditable.</div>
       <div className="grid md:grid-cols-2 gap-2">
         <div>
           <label className="label">Start Date</label>

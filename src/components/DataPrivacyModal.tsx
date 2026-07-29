@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { Icon } from "./Icons";
 
 export function DataPrivacyContent() {
   return (
@@ -11,7 +12,7 @@ export function DataPrivacyContent() {
       </p>
 
       <div>
-        <h4 className="font-bold text-gray-900 mt-3 mb-1">📦 What we collect</h4>
+        <h4 className="font-bold text-gray-900 mt-3 mb-1 inline-flex items-center gap-1"><Icon.Folder size={14} /> What we collect</h4>
         <ul className="list-disc ml-5 space-y-0.5">
           <li>Profile data (name, email, position, hire date, photo)</li>
           <li>Performance ratings, justifications, and comments you submit</li>
@@ -21,7 +22,7 @@ export function DataPrivacyContent() {
       </div>
 
       <div>
-        <h4 className="font-bold text-gray-900 mt-3 mb-1">👁️ Who can see your data</h4>
+        <h4 className="font-bold text-gray-900 mt-3 mb-1 inline-flex items-center gap-1"><Icon.Eye size={14} /> Who can see your data</h4>
         <ul className="list-disc ml-5 space-y-0.5">
           <li><strong>You:</strong> Full access to all your own records.</li>
           <li><strong>Your direct manager:</strong> Only your evaluations — never another colleague's.</li>
@@ -31,7 +32,7 @@ export function DataPrivacyContent() {
       </div>
 
       <div>
-        <h4 className="font-bold text-gray-900 mt-3 mb-1">🔒 How we protect your data</h4>
+        <h4 className="font-bold text-gray-900 mt-3 mb-1 inline-flex items-center gap-1"><Icon.Lock size={14} /> How we protect your data</h4>
         <ul className="list-disc ml-5 space-y-0.5">
           <li>Encrypted in transit (HTTPS / TLS 1.3) and at rest in the cloud database</li>
           <li>Database hosted in <strong>Singapore</strong> (Asia region — within ASEAN data residency)</li>
@@ -42,7 +43,7 @@ export function DataPrivacyContent() {
       </div>
 
       <div>
-        <h4 className="font-bold text-gray-900 mt-3 mb-1">📜 Your rights (DPA / Republic Act 10173)</h4>
+        <h4 className="font-bold text-gray-900 mt-3 mb-1 inline-flex items-center gap-1"><Icon.Doc size={14} /> Your rights (DPA / Republic Act 10173)</h4>
         <ul className="list-disc ml-5 space-y-0.5">
           <li><strong>Right to access</strong> — Request a copy of all your data anytime via HR.</li>
           <li><strong>Right to correct</strong> — Update inaccurate info in My Profile or via HR.</li>
@@ -52,7 +53,7 @@ export function DataPrivacyContent() {
       </div>
 
       <div>
-        <h4 className="font-bold text-gray-900 mt-3 mb-1">⚠️ Important notes</h4>
+        <h4 className="font-bold text-gray-900 mt-3 mb-1 inline-flex items-center gap-1"><Icon.Alert size={14} className="text-amber-600" /> Important notes</h4>
         <ul className="list-disc ml-5 space-y-0.5">
           <li>Your <strong>self-rating is yours alone</strong> — your manager cannot edit it.</li>
           <li>Submissions are <strong>locked once submitted</strong>. Changes require HR re-open.</li>
@@ -62,8 +63,8 @@ export function DataPrivacyContent() {
       </div>
 
       <div>
-        <h4 className="font-bold text-gray-900 mt-3 mb-1">📞 Contact our Data Protection Officer</h4>
-        <p>Questions, concerns, or requests? Email <strong>dpo@sevengen.com</strong> or your HR contact.</p>
+        <h4 className="font-bold text-gray-900 mt-3 mb-1 inline-flex items-center gap-1"><Icon.Mail size={14} /> Contact our Data Protection Officer</h4>
+        <p>Questions, concerns, or requests? Email <strong><a href="mailto:kat.vizconde@seven-gen.com" className="text-primary-700 hover:underline">kat.vizconde@seven-gen.com</a></strong> or your HR contact.</p>
       </div>
 
       <p className="text-xs text-gray-500 italic mt-4">
@@ -78,18 +79,18 @@ export function DataPrivacyButton() {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <button onClick={() => setOpen(true)} className="text-xs text-gray-500 hover:text-primary-600 underline">
-        🔒 Data Privacy Policy
+      <button onClick={() => setOpen(true)} className="text-xs text-gray-500 hover:text-primary-600 underline inline-flex items-center gap-1">
+        <Icon.Lock size={12} /> Data Privacy Policy
       </button>
       {open && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setOpen(false)}>
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="bg-gradient-to-r from-primary-600 to-blue-500 text-white p-5 flex justify-between items-start">
               <div>
-                <h2 className="text-xl font-bold">🔒 Data Privacy Policy</h2>
+                <h2 className="text-xl font-bold inline-flex items-center gap-2"><Icon.Lock size={20} /> Data Privacy Policy</h2>
                 <p className="text-sm text-blue-100 mt-1">How we protect your information.</p>
               </div>
-              <button onClick={() => setOpen(false)} className="text-white/80 hover:text-white text-xl">✕</button>
+              <button onClick={() => setOpen(false)} className="text-white/80 hover:text-white"><Icon.X size={20} /></button>
             </div>
             <div className="overflow-y-auto p-6"><DataPrivacyContent /></div>
             <div className="p-4 border-t border-gray-200 flex justify-end">

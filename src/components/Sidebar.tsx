@@ -4,48 +4,52 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { Logo } from "./Logo";
+import { Icon, IconName } from "./Icons";
 
 type User = { id: string; name: string; email: string; role: "HR_ADMIN" | "MANAGER" | "EMPLOYEE" };
-type Link = { href: string; icon: string; label: string; roles?: User["role"][] };
+type Link = { href: string; icon: IconName; label: string; roles?: User["role"][] };
 type Section = { label: string; links: Link[] };
 
 const SECTIONS: Section[] = [
   {
     label: "",
-    links: [{ href: "/dashboard", icon: "📊", label: "Dashboard" }],
+    links: [{ href: "/dashboard", icon: "BarChart", label: "Dashboard" }],
   },
   {
     label: "Performance",
     links: [
-      { href: "/team-compare", icon: "📈", label: "Team Profile", roles: ["HR_ADMIN", "MANAGER"] },
-      { href: "/employees", icon: "👥", label: "Employees", roles: ["HR_ADMIN"] },
-      { href: "/templates", icon: "📋", label: "Templates", roles: ["HR_ADMIN"] },
+      { href: "/team-compare", icon: "LineChart", label: "Team Profile", roles: ["HR_ADMIN", "MANAGER"] },
+      { href: "/employees", icon: "Users", label: "Employees", roles: ["HR_ADMIN"] },
+      { href: "/teams", icon: "Users", label: "Teams", roles: ["HR_ADMIN"] },
+      { href: "/templates", icon: "Clipboard", label: "Templates", roles: ["HR_ADMIN"] },
     ],
   },
   {
     label: "Engagement",
     links: [
-      { href: "/kudos", icon: "🎉", label: "Kudos" },
-      { href: "/career-paths", icon: "📚", label: "Career Paths", roles: ["HR_ADMIN"] },
+      { href: "/kudos", icon: "Trophy", label: "Kudos" },
+      { href: "/career-paths", icon: "GraduationCap", label: "Career Paths", roles: ["HR_ADMIN"] },
     ],
   },
   {
     label: "Insights",
     links: [
-      { href: "/heat-map", icon: "🗺️", label: "Heat Map", roles: ["HR_ADMIN"] },
-      { href: "/compliance", icon: "📜", label: "Compliance", roles: ["HR_ADMIN"] },
+      { href: "/heat-map", icon: "PieChart", label: "Heat Map", roles: ["HR_ADMIN"] },
+      { href: "/recommendations", icon: "Lock", label: "Recommendations", roles: ["HR_ADMIN"] },
+      { href: "/compliance", icon: "Doc", label: "Compliance", roles: ["HR_ADMIN"] },
     ],
   },
   {
     label: "Admin",
     links: [
-      { href: "/admin", icon: "⚙️", label: "Settings", roles: ["HR_ADMIN"] },
+      { href: "/admin", icon: "Settings", label: "Settings", roles: ["HR_ADMIN"] },
     ],
   },
   {
     label: "Account",
     links: [
-      { href: "/profile", icon: "👤", label: "My Profile" },
+      { href: "/profile", icon: "User", label: "My Profile" },
+      { href: "/help",    icon: "Info", label: "Help & Support" },
     ],
   },
 ];
@@ -83,7 +87,7 @@ export function Sidebar({ user }: { user: User }) {
         onClick={() => setOpen(true)}
         className="lg:hidden fixed top-3 left-3 z-40 w-10 h-10 rounded-lg bg-gray-900 text-white flex items-center justify-center shadow-lg no-print"
       >
-        ☰
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
       </button>
 
       {/* Desktop collapse toggle */}
@@ -93,7 +97,7 @@ export function Sidebar({ user }: { user: User }) {
         className={`hidden lg:flex fixed top-4 z-50 w-7 h-7 rounded-md bg-white border border-gray-200 text-gray-500 hover:text-gray-800 hover:bg-gray-50 items-center justify-center shadow-sm no-print transition-all ${collapsed ? "left-[60px]" : "left-[240px]"}`}
         title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
-        {collapsed ? "→" : "←"}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: collapsed ? "rotate(180deg)" : "none" }}><path d="M15 18l-6-6 6-6"/></svg>
       </button>
 
       {/* Mobile backdrop */}
@@ -136,7 +140,7 @@ export function Sidebar({ user }: { user: User }) {
                             : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                         } ${collapsed ? "justify-center" : ""}`}
                       >
-                        <span className="text-base flex-shrink-0">{l.icon}</span>
+                        <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center">{(() => { const C = Icon[l.icon]; return <C size={18} />; })()}</span>
                         {!collapsed && <span className="truncate">{l.label}</span>}
                         {!collapsed && active && <span className="ml-auto w-1 h-4 rounded-full bg-primary-600" />}
                       </Link>
@@ -155,7 +159,9 @@ export function Sidebar({ user }: { user: User }) {
               <div className="w-9 h-9 rounded-full bg-primary-600 text-white text-xs font-bold flex items-center justify-center" title={user.name}>
                 {initial}
               </div>
-              <button onClick={() => signOut({ callbackUrl: "/login" })} title="Sign out" className="text-sm text-gray-400 hover:text-red-600">⎋</button>
+              <button onClick={() => signOut({ callbackUrl: "/login" })} title="Sign out" className="text-sm text-gray-400 hover:text-red-600">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              </button>
             </div>
           ) : (
             <div className="flex items-center gap-3 px-1">

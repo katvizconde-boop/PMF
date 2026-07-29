@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Icon } from "./Icons";
+import { PrintSectionButton } from "./PrintSectionButton";
 
 type Goal = {
   id: string; description: string; target: string | null; status: string;
@@ -68,10 +70,13 @@ export function GoalsSection({
   for (const g of goals) (byCycle[g.cycle.name] ??= []).push(g);
 
   return (
-    <div className="card">
+    <div className="card printable-goals">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="section-header mb-0">🎯 Goals</h3>
-        {canAdd && !adding && <button className="btn btn-primary text-xs" onClick={() => setAdding(true)}>+ Add Goal</button>}
+        <h3 className="section-header mb-0 inline-flex items-center gap-1"><Icon.Target size={16} /> Goals</h3>
+        <div className="inline-flex items-center gap-2">
+          <PrintSectionButton sectionId="goals" label="goals" />
+          {canAdd && !adding && <button className="btn btn-primary text-xs" onClick={() => setAdding(true)}>+ Add Goal</button>}
+        </div>
       </div>
 
       {adding && (
@@ -103,7 +108,7 @@ export function GoalsSection({
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-sm text-gray-800">{g.description}</div>
-                        {g.target && <div className="text-xs text-gray-500 mt-0.5">🎯 {g.target}</div>}
+                        {g.target && <div className="text-xs text-gray-500 mt-0.5 inline-flex items-center gap-1"><Icon.Target size={12} /> {g.target}</div>}
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <select value={g.status} onChange={(e) => updateGoal(g.id, { status: e.target.value })} className={`chip cursor-pointer border-0 outline-none ${STATUS_COLORS[g.status] ?? STATUS_COLORS.DRAFT}`}>
@@ -119,7 +124,7 @@ export function GoalsSection({
                             {[1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5].map((r) => <option key={r} value={r}>{r}</option>)}
                           </select>
                         )}
-                        <button onClick={() => remove(g.id)} className="text-xs text-gray-400 hover:text-red-600 px-1">✕</button>
+                        <button onClick={() => remove(g.id)} className="text-xs text-gray-400 hover:text-red-600 px-1"><Icon.X size={12} /></button>
                       </div>
                     </div>
                     {canRate && (

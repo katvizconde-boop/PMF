@@ -1,5 +1,6 @@
 "use client";
 import { useState, useMemo, useEffect } from "react";
+import { Icon } from "./Icons";
 
 type Question = { id: string; prompt: string; inputType: string; required: boolean };
 type Section = { id: string; title: string; kind: string; weight: number; questions: Question[] };
@@ -40,6 +41,10 @@ export function MissingItemsTracker({
     let total = 0;
     let completed = 0;
     for (const s of sections) {
+      // Public RECOMMENDATION section removed from the UI — skip it everywhere.
+      if (s.kind === "RECOMMENDATION") continue;
+      const skipRequiredCheck = false;
+
       for (const q of s.questions) {
         if (q.inputType === "rating") {
           total++;
@@ -51,7 +56,7 @@ export function MissingItemsTracker({
           } else {
             completed++;
           }
-        } else if (q.required && (q.inputType === "select" || q.inputType === "text")) {
+        } else if (q.required && !skipRequiredCheck && (q.inputType === "select" || q.inputType === "text")) {
           total++;
           const v = form[q.id];
           if (!v?.comment?.trim()) {
@@ -87,7 +92,7 @@ export function MissingItemsTracker({
         style={{ bottom: 110, [position === "right" ? "right" : "left"]: 16 } as React.CSSProperties}
         title="Show missing items tracker"
       >
-        📋 {missing.length > 0 ? `${missing.length} missing` : "Progress"}
+        <span className="inline-flex items-center gap-1"><Icon.Clipboard size={14} /> {missing.length > 0 ? `${missing.length} missing` : "Progress"}</span>
       </button>
     );
   }
@@ -118,14 +123,14 @@ export function MissingItemsTracker({
             <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
               allDone ? "bg-emerald-500 text-white" : missing.length > 0 ? "bg-amber-400 text-white" : "bg-primary-100 text-primary-700"
             }`}>
-              {allDone ? "✓" : missing.length}
+              {allDone ? <Icon.Check size={20} /> : missing.length}
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-semibold text-gray-800">
                 {allDone ? "Ready to submit!" : missing.length > 0 ? `${missing.length} missing item${missing.length === 1 ? "" : "s"}` : "Almost there!"}
               </div>
               <div className="text-xs text-gray-500">
-                {completed} of {total} · {signed ? "✓ signed" : "not signed"}
+                {completed} of {total} · {signed ? <span className="inline-flex items-center gap-0.5"><Icon.Check size={10} /> signed</span> : "not signed"}
               </div>
               <div className="h-1 rounded-full bg-gray-200 mt-1.5 overflow-hidden">
                 <div
@@ -142,7 +147,7 @@ export function MissingItemsTracker({
               {position === "right" ? "◄" : "►"}
             </button>
             <button onClick={dismiss} title="Hide tracker" className="text-gray-400 hover:text-red-600 text-xs p-1">
-              ✕
+              <Icon.X size={12} />
             </button>
           </div>
         </div>
@@ -154,7 +159,7 @@ export function MissingItemsTracker({
           }`}>
             <div className="flex-1 min-w-0">
               <div className="font-bold text-gray-800 text-sm">
-                {allDone ? "✓ Everything looks good!" : `${missing.length} item${missing.length === 1 ? "" : "s"} to finish`}
+                {allDone ? <span className="inline-flex items-center gap-1"><Icon.Check size={14} className="text-emerald-600" /> Everything looks good!</span> : `${missing.length} item${missing.length === 1 ? "" : "s"} to finish`}
               </div>
               <div className="text-[11px] text-gray-600 mt-0.5">{completed}/{total} · {pct}% complete</div>
             </div>
@@ -163,7 +168,7 @@ export function MissingItemsTracker({
                 {position === "right" ? "◄" : "►"}
               </button>
               <button onClick={() => setExpanded(false)} className="text-gray-400 hover:text-gray-700 p-1 text-base leading-none" aria-label="Minimize">▾</button>
-              <button onClick={dismiss} className="text-gray-400 hover:text-red-600 p-1 text-sm" aria-label="Close">✕</button>
+              <button onClick={dismiss} className="text-gray-400 hover:text-red-600 p-1 text-sm" aria-label="Close"><Icon.X size={14} /></button>
             </div>
           </div>
 
@@ -195,13 +200,13 @@ export function MissingItemsTracker({
               ))}
               {!signed && (
                 <div className="px-3 py-2 mt-1 bg-rose-50 border border-rose-100 rounded-lg text-xs text-rose-700">
-                  <strong>⚠ Signature missing.</strong> Scroll to the bottom of the form to sign.
+                  <strong className="inline-flex items-center gap-1"><Icon.Alert size={12} className="text-amber-600" /> Signature missing.</strong> Scroll to the bottom of the form to sign.
                 </div>
               )}
             </div>
           ) : (
             <div className="p-5 text-center">
-              <div className="text-4xl mb-2">🎉</div>
+              <div className="flex justify-center mb-2"><Icon.Trophy size={40} className="text-amber-500" /></div>
               <div className="font-semibold text-gray-800 text-sm">All items complete!</div>
               <div className="text-xs text-gray-500 mt-1">
                 {signed ? "Click Submit at the bottom when ready." : "Sign the form at the bottom to enable submit."}

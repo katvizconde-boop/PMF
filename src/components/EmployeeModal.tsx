@@ -99,9 +99,19 @@ export function EmployeeModal({
           </div>
           {!initial && (
             <div>
-              <label className="label">Initial Password</label>
-              <input className="input" type="text" placeholder="password123" value={form.password} onChange={set("password")} />
-              <div className="text-xs text-gray-500 mt-1">Leave empty for default. User can change on first login.</div>
+              <label className="label">Initial Password (optional)</label>
+              <input
+                className="input"
+                type="password"
+                placeholder="Leave empty for auto-generated"
+                value={form.password}
+                onChange={set("password")}
+                autoComplete="new-password"
+              />
+              <div className="text-xs text-gray-500 mt-1">
+                Leave empty and the system will generate a strong random password.
+                The user will be forced to change it on first login.
+              </div>
             </div>
           )}
           <div className="flex justify-end gap-2 pt-2">

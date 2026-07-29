@@ -6,6 +6,8 @@ import { ratingClass, stateColor } from "@/lib/ui";
 import { getScoreBreakdown } from "@/lib/scoring";
 import { StatusTimeline } from "@/components/StatusTimeline";
 import { DeleteAssignmentButton } from "@/components/DeleteAssignmentButton";
+import { ReopenFinalizedCard } from "@/components/ReopenFinalizedCard";
+import { Icon } from "@/components/Icons";
 
 export default async function AssignmentPage({ params }: { params: { id: string } }) {
   const u = await requireUser();
@@ -33,13 +35,17 @@ export default async function AssignmentPage({ params }: { params: { id: string 
 
   let authorRole: "EMPLOYEE" | "MANAGER" | "HR" = "EMPLOYEE";
   let canEdit = false;
-  if (u.role === "HR_ADMIN") {
+  // When a user views their OWN assignment, they are always the EMPLOYEE
+  // (a manager evaluating themselves fills in the self-assessment side).
+  const isOwnAssignment = full.employeeId === u.id;
+  if (u.role === "HR_ADMIN" && !isOwnAssignment) {
     authorRole = "HR";
     canEdit = false; // HR reviews only — no input fields, just Finalize action
-  } else if (u.role === "MANAGER") {
+  } else if (u.role === "MANAGER" && !isOwnAssignment) {
     authorRole = "MANAGER";
     canEdit = full.state === "MANAGER_REVIEW";
   } else {
+    // EMPLOYEE viewing own, OR MANAGER/HR_ADMIN viewing their own self-assessment
     authorRole = "EMPLOYEE";
     canEdit = full.state === "SELF_ASSESS";
   }
@@ -73,7 +79,7 @@ export default async function AssignmentPage({ params }: { params: { id: string 
               </div>
             )}
             <a href={`/assignments/${full.id}/print`} target="_blank" rel="noopener noreferrer" className="btn btn-secondary text-xs">
-              🖨 Print / Export PDF
+              <span className="inline-flex items-center gap-1"><Icon.Print size={14} /> Print / Export PDF</span>
             </a>
             {u.role === "HR_ADMIN" && (
               <DeleteAssignmentButton
@@ -85,6 +91,20 @@ export default async function AssignmentPage({ params }: { params: { id: string 
           </div>
         </div>
       </div>
+
+      {u.role === "HR_ADMIN" && (full.state === "FINALIZED" || full.state === "HR_REVIEW" || full.state === "MANAGER_REVIEW") && (
+        <ReopenFinalizedCard
+          assignmentId={full.id}
+          employeeName={`${full.employee.firstName} ${full.employee.lastName}`}
+          cycleName={full.cycle.name}
+          state={full.state}
+          allowedTargets={
+            full.state === "MANAGER_REVIEW"
+              ? ["SELF_ASSESS"]                        // already with manager; only option is to send back to employee
+              : ["MANAGER_REVIEW", "SELF_ASSESS"]      // FINALIZED or HR_REVIEW — either direction OK
+          }
+        />
+      )}
 
       <StatusTimeline
         state={full.state}
@@ -141,16 +161,35 @@ export default async function AssignmentPage({ params }: { params: { id: string 
         canEdit={canEdit}
         viewerRole={u.role}
         state={full.state}
-        recommendation={full.recommendation}
+        recommendation={u.role !== "EMPLOYEE" && !isOwnAssignment ? full.recommendation : null}
+        // ── Privacy gate ──
+        // Private recommendation is NEVER visible to the person being evaluated —
+        // not even if that person is also a manager or HR admin. The subject of a PMF
+        // is always the "employee" on it, regardless of their org-wide role.
+        //
+        // Visible ONLY when the viewer is a MANAGER or HR AND it's NOT their own PMF.
+        privateRecommendation={
+          u.role !== "EMPLOYEE" && !isOwnAssignment ? full.privateRecommendation : null
+        }
+        privateRecommendationNotes={
+          u.role !== "EMPLOYEE" && !isOwnAssignment ? full.privateRecommendationNotes : null
+        }
+        keyProjectActivities={full.keyProjectActivities}
+        canPreFillKeyResp={
+          // Manager may pre-fill Key Responsibilities before OR during their review
+          u.role === "MANAGER" && !isOwnAssignment && (full.state === "SELF_ASSESS" || full.state === "MANAGER_REVIEW")
+        }
         signatures={{
           employee: { data: full.employeeSignature, at: full.employeeSignedAt?.toISOString() ?? null },
           manager:  { data: full.managerSignature,  at: full.managerSignedAt?.toISOString()  ?? null },
           hr:       { data: full.hrSignature,       at: full.hrSignedAt?.toISOString()       ?? null },
         }}
         signatureNames={{
-          employee: `${full.employee.firstName} ${full.employee.lastName}`,
-          manager:  `${full.manager.firstName} ${full.manager.lastName}`,
-          hr:       "HR Admin",
+          // Prefer the name the signer typed at sign time.
+          // Fall back to auto-derived name for historic signatures written before this feature shipped.
+          employee: full.employeeSignatureName ?? `${full.employee.firstName} ${full.employee.lastName}`,
+          manager:  full.managerSignatureName  ?? `${full.manager.firstName} ${full.manager.lastName}`,
+          hr:       full.hrSignatureName       ?? "HR Admin",
         }}
       />
     </div>

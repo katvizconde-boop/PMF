@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ratingClass, stateColor } from "@/lib/ui";
+import { Icon } from "./Icons";
 
 function bgForRating(r: number | null) {
   if (r == null) return "#f3f4f6";
@@ -31,7 +32,7 @@ export function TeamCompareView({
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">📈 Team Profile</h2>
+        <h2 className="text-2xl font-bold text-gray-800 inline-flex items-center gap-2"><Icon.LineChart size={24} /> Team Profile</h2>
         <select
           className="input max-w-xs"
           value={activeCycleId}

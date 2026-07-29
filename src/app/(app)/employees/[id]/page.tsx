@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { EmployeeDetail } from "@/components/EmployeeDetail";
 
 export default async function EmployeeDetailPage({ params }: { params: { id: string } }) {
-  await requireRole("HR_ADMIN");
+  const viewer = await requireRole("HR_ADMIN");
   const u = await db.user.findUnique({
     where: { id: params.id },
     include: {
@@ -25,6 +25,7 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
       managers={allUsers.map((m) => ({ id: m.id, name: `${m.firstName} ${m.lastName}`, position: m.position }))}
       templates={templates.map((t) => ({ id: t.id, name: t.name, type: t.type }))}
       cycles={cycles.map((c) => ({ id: c.id, name: c.name }))}
+      viewerRole={viewer.role}
     />
   );
 }

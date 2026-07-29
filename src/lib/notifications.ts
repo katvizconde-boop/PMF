@@ -10,6 +10,7 @@ export type NotificationType =
   | "ONEONONE_SCHEDULED"
   | "PIP_STARTED"
   | "PIP_UPDATED"
+  | "MISASSIGNED_MEMBER_REPORT"
   | "INFO";
 
 export async function notify(opts: {

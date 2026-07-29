@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Icon } from "./Icons";
 
 type FlightRisk = {
   userId: string; name: string; position: string | null; department: string | null;
@@ -17,16 +18,16 @@ export function FlightRiskWidget({ risks }: { risks: FlightRisk[] }) {
   return (
     <div className="card mb-6">
       <h3 className="section-header flex items-center gap-2">
-        <span>🪂 Flight Risk Indicator</span>
+        <Icon.Alert size={16} className="text-amber-600" /><span>Flight Risk Indicator</span>
         <span className="chip bg-red-100 text-red-700 ml-auto text-[10px]">{risks.length}</span>
       </h3>
       <p className="text-xs text-gray-500 mb-3">Employees with declining scores — consider a retention conversation.</p>
-      <div className="space-y-2">
-        {risks.slice(0, 5).map((r) => (
+      <div className="due-scroll space-y-2 overflow-y-auto pr-2" style={{ maxHeight: 360 }}>
+        {risks.map((r) => (
           <Link key={r.userId} href={`/employees/${r.userId}`}
             className="flex items-center gap-3 p-3 rounded-lg border border-red-100 bg-red-50/50 hover:bg-red-50 transition">
             <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-              <span className="text-lg">⚠️</span>
+              <Icon.Alert size={18} className="text-amber-600" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-semibold text-gray-800">{r.name}</div>
@@ -48,6 +49,11 @@ export function FlightRiskWidget({ risks }: { risks: FlightRisk[] }) {
           </Link>
         ))}
       </div>
+      {risks.length > 4 && (
+        <div className="text-[11px] text-gray-400 mt-2 text-center inline-flex items-center justify-center gap-1 w-full">
+          <Icon.ChevronDown size={12} /> Scroll for more
+        </div>
+      )}
     </div>
   );
 }
@@ -57,7 +63,7 @@ export function ProbationAlertsWidget({ alerts }: { alerts: ProbationAlert[] }) 
   return (
     <div className="card mb-6">
       <h3 className="section-header flex items-center gap-2">
-        <span>⚠️ Probationary Period Alerts</span>
+        <Icon.Alert size={16} className="text-amber-600" /><span>Probationary Period Alerts</span>
         <span className="chip bg-amber-100 text-amber-700 ml-auto text-[10px]">{alerts.length}</span>
       </h3>
       <p className="text-xs text-gray-500 mb-3">Probations ending soon — schedule regularization or extension.</p>
@@ -86,7 +92,7 @@ export function ProbationAlertsWidget({ alerts }: { alerts: ProbationAlert[] }) 
                 <div className="text-xs text-gray-500">{a.position ?? "—"}</div>
                 <div className="text-xs text-gray-400 mt-0.5">
                   Hired {new Date(a.hireDate).toLocaleDateString()}
-                  {!a.hasFinalizedProbEval && <span className="ml-2 text-red-600 font-semibold">⚠ No probationary PMF on record</span>}
+                  {!a.hasFinalizedProbEval && <span className="ml-2 text-red-600 font-semibold inline-flex items-center gap-1"><Icon.Alert size={12} className="text-amber-600" /> No probationary PMF on record</span>}
                 </div>
               </div>
             </Link>

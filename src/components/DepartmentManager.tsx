@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { companyChipClass } from "@/lib/companies";
+import { Icon } from "./Icons";
 
 export function DepartmentManager({
   companies, defaultDepts, dbDepts,
@@ -43,7 +44,7 @@ export function DepartmentManager({
 
   return (
     <div className="card">
-      <h3 className="section-header">🏢 Departments / Teams</h3>
+      <h3 className="section-header inline-flex items-center gap-1"><Icon.Building size={16} /> Departments / Teams</h3>
       <p className="text-xs text-gray-500 mb-3">Add or remove departments per company. Default departments are built-in and protected.</p>
 
       {/* Company tabs */}

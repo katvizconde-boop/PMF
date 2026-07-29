@@ -1,6 +1,20 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import { Icon } from "./Icons";
+
+const ICON_COMPONENTS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+  PMF_ASSIGNED: Icon.Clipboard,
+  PMF_SELF_SUBMITTED: Icon.Send,
+  PMF_MANAGER_SUBMITTED: Icon.Download,
+  PMF_FINALIZED: Icon.CheckCircle,
+  PMF_REOPENED: Icon.Edit,
+  KUDOS_RECEIVED: Icon.Trophy,
+  ONEONONE_SCHEDULED: Icon.Calendar,
+  PIP_STARTED: Icon.Alert,
+  PIP_UPDATED: Icon.LineChart,
+  INFO: Icon.Info,
+};
 
 type Notif = {
   id: string;
@@ -12,11 +26,6 @@ type Notif = {
   createdAt: string;
 };
 
-const ICONS: Record<string, string> = {
-  PMF_ASSIGNED: "📋", PMF_SELF_SUBMITTED: "📤", PMF_MANAGER_SUBMITTED: "📥",
-  PMF_FINALIZED: "✅", PMF_REOPENED: "🔄", KUDOS_RECEIVED: "🎉",
-  ONEONONE_SCHEDULED: "📅", PIP_STARTED: "⚠️", PIP_UPDATED: "📈", INFO: "ℹ️",
-};
 
 function timeAgo(iso: string) {
   const ms = Date.now() - new Date(iso).getTime();
@@ -82,7 +91,7 @@ export function NotificationBell() {
         className="relative w-9 h-9 rounded-lg hover:bg-gray-100 flex items-center justify-center transition"
         aria-label="Notifications"
       >
-        <span className="text-xl">🔔</span>
+        <Icon.Bell size={20} />
         {unread > 0 && (
           <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
             {unread > 99 ? "99+" : unread}
@@ -104,17 +113,20 @@ export function NotificationBell() {
 
           {items.length === 0 ? (
             <div className="p-8 text-center text-sm text-gray-400">
-              <div className="text-4xl mb-2">🌱</div>
+              <div className="flex justify-center mb-2"><Icon.Sprout size={40} className="text-emerald-500" /></div>
               You're all caught up!
             </div>
           ) : (
-            <div className="max-h-[480px] overflow-y-auto">
+            <div
+              className="notif-scroll overflow-y-auto"
+              style={{ maxHeight: "min(70vh, 480px)" }}
+            >
               {items.map((n) => {
                 const Inner = (
                   <div
                     className={`flex gap-3 px-4 py-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer ${!n.readAt ? "bg-blue-50/40" : ""}`}
                   >
-                    <div className="text-2xl flex-shrink-0">{ICONS[n.type] ?? "🔔"}</div>
+                    <div className="flex-shrink-0">{(() => { const IC = ICON_COMPONENTS[n.type] ?? Icon.Bell; return <IC size={24} />; })()}</div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <div className="font-medium text-sm text-gray-800 leading-snug">{n.title}</div>
@@ -133,8 +145,24 @@ export function NotificationBell() {
               })}
             </div>
           )}
+
+          {items.length > 4 && (
+            <div className="px-4 py-2 text-[11px] text-gray-500 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+              <span>{items.length} notifications</span>
+              <span className="inline-flex items-center gap-1"><Icon.ChevronDown size={12} /> Scroll for more</span>
+            </div>
+          )}
         </div>
       )}
+
+      {/* Styled scrollbar — visible track */}
+      <style jsx>{`
+        :global(.notif-scroll)::-webkit-scrollbar { width: 8px; }
+        :global(.notif-scroll)::-webkit-scrollbar-track { background: #f3f4f6; border-radius: 8px; }
+        :global(.notif-scroll)::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; border: 2px solid #f3f4f6; }
+        :global(.notif-scroll)::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        :global(.notif-scroll) { scrollbar-width: thin; scrollbar-color: #cbd5e1 #f3f4f6; }
+      `}</style>
     </div>
   );
 }

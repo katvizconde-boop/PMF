@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { Icon } from "./Icons";
 
 export function ImportPdfButton() {
   const router = useRouter();
@@ -33,7 +34,7 @@ export function ImportPdfButton() {
 
   return (
     <>
-      <button className="btn btn-secondary" onClick={() => setOpen(true)}>📄 Import from PDF</button>
+      <button className="btn btn-secondary" onClick={() => setOpen(true)}><span className="inline-flex items-center gap-1"><Icon.Doc size={14} /> Import from PDF</span></button>
       {open && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setOpen(false)}>
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
@@ -65,8 +66,8 @@ export function ImportPdfButton() {
                 </select>
               </div>
               {err && <div className="text-sm text-red-600 bg-red-50 p-2 rounded">{err}</div>}
-              <div className="text-xs bg-blue-50 text-blue-800 p-2 rounded">
-                💡 The draft is created <b>inactive</b> so you can review and edit before assigning.
+              <div className="text-xs bg-blue-50 text-blue-800 p-2 rounded inline-flex items-center gap-1">
+                <Icon.Sparkle size={12} /> The draft is created <b>inactive</b> so you can review and edit before assigning.
               </div>
               <div className="flex justify-end gap-2 pt-1">
                 <button type="button" className="btn btn-secondary" onClick={() => setOpen(false)}>Cancel</button>

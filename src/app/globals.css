@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&display=swap");
 
 body {
   @apply bg-canvas text-gray-900 min-h-screen antialiased;
@@ -74,6 +74,178 @@ body {
   .card { @apply p-4 rounded-lg; }
   h1 { @apply text-xl; }
   h2 { font-size: 1.375rem; }
+  .btn { @apply px-3 py-2 text-sm; min-height: 40px; }
+  .input, .form-input { font-size: 16px; /* prevent iOS zoom-on-focus */ }
+  /* extra breathing room for sticky bottom bars above iOS home indicator */
+  main, .main-content { padding-bottom: env(safe-area-inset-bottom, 0px); }
 }
 
+/* Tap target hint for touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .btn, button, a { min-height: 40px; }
+  .btn:active { transform: scale(0.97); }
+}
+
+/* ── Horizontal-scroll wrapper for tables on mobile ─── */
+.table-scroll { @apply overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0; }
+.table-scroll table { @apply min-w-full; }
+.table-scroll::-webkit-scrollbar { height: 8px; }
+.table-scroll::-webkit-scrollbar-track { background: #f3f4f6; border-radius: 8px; }
+.table-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+
+/* ── Interactive polish: smooth transitions + press states ── */
+button, a, [role="button"] { transition: transform .12s, background-color .15s, color .15s, box-shadow .15s, border-color .15s; }
+button:not(:disabled):active, .btn:not(:disabled):active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none !important; }
+
+/* ── Mobile-only interactive enhancements ───────────────── */
+@media (max-width: 1023px) {
+  /* Cards: subtle press feedback */
+  .card { transition: transform 0.1s, box-shadow 0.15s; }
+  .card:active { transform: scale(0.995); }
+
+  /* Tap-highlight removal for cleaner look on iOS/Android */
+  * { -webkit-tap-highlight-color: transparent; }
+
+  /* Bottom-sheet style for full-screen modals on mobile */
+  .modal-mobile-sheet {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+  .modal-mobile-sheet > div {
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    max-height: 90vh !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    animation: slideUp 0.25s ease-out;
+  }
+
+  /* Horizontal scroll for filter chips on mobile */
+  .chip-row { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.25rem; scrollbar-width: none; -ms-overflow-style: none; }
+  .chip-row::-webkit-scrollbar { display: none; }
+  .chip-row > * { flex-shrink: 0; }
+
+  /* Sticky table headers stay visible on long lists */
+  .table-scroll table thead th {
+    position: sticky; top: 0; background: white; z-index: 1;
+  }
+}
+
+/* Slide-up keyframe (used by mobile sheets) */
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+/* Ripple-like flash on chip taps */
+.chip-tappable { position: relative; overflow: hidden; }
+.chip-tappable:active::after {
+  content: ""; position: absolute; inset: 0;
+  background: currentColor; opacity: 0.08;
+  animation: chipFlash 0.3s ease-out;
+}
+@keyframes chipFlash {
+  from { opacity: 0.15; }
+  to   { opacity: 0; }
+}
+
+/* Animated underline for tabs */
+.tab { position: relative; }
+.tab::after {
+  content: ""; position: absolute; left: 50%; bottom: -2px;
+  width: 0; height: 2px; background: theme('colors.primary.600');
+  transition: width 0.2s, left 0.2s;
+}
+.tab.active::after { width: 100%; left: 0; }
+
+/* Smooth scroll for whole document */
+html { scroll-behavior: smooth; }
+
+/* Pull-to-refresh — disable overscroll glow on iOS Safari */
+body { overscroll-behavior-y: contain; }
+
+/* Card lift on hover (opt-in via class) */
+.card.interactive,
+.card[data-interactive="true"] { cursor: pointer; transition: transform .15s, box-shadow .15s, border-color .15s; }
+.card.interactive:hover,
+.card[data-interactive="true"]:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(15,23,42,0.08); border-color: #c7d2fe; }
+
+/* Focus ring */
+button:focus-visible, a:focus-visible, .input:focus-visible, .btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.30);
+}
+
+/* ── Keyframes / animations ─────────────────────────── */
+@keyframes fadeIn  { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+@keyframes pulse-soft { 0%,100% { opacity: 1; } 50% { opacity: .55; } }
+
+.animate-fade-in    { animation: fadeIn .25s ease-out; }
+.animate-slide-up   { animation: slideUp .3s ease-out; }
+.animate-slide-in-r { animation: slideInRight .3s ease-out; }
+.animate-pulse-soft { animation: pulse-soft 1.4s ease-in-out infinite; }
+
+/* Skeleton placeholder */
+.skeleton {
+  background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: 6px;
+}
+
+/* Sticky bottom bars: extend over iOS safe area */
+.sticky.bottom-0 { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+/* Hide horizontal scroll bar entirely on tabs */
+.tabs-bar { scrollbar-width: none; }
+.tabs-bar::-webkit-scrollbar { display: none; }
+
 @media print { .no-print { display: none !important; } }
+
+/* ── Print individual sections ──────────────────────────
+   When body has class "print-only-<id>", hide everything except
+   elements with class "printable-<id>" (and their children).
+   Used by PrintSectionButton.
+*/
+@media print {
+  body[class*="print-only-"] {
+    background: white !important;
+  }
+  body[class*="print-only-"] [class*="printable-"] {
+    /* keep printable sections visible */
+  }
+  body[class*="print-only-"] > *:not(:has([class*="printable-"])) {
+    /* keep ancestor containers visible too */
+  }
+  body[class*="print-only-"] aside,
+  body[class*="print-only-"] nav,
+  body[class*="print-only-"] .main-content > div.sticky,
+  body[class*="print-only-"] [data-print-hide="true"] {
+    display: none !important;
+  }
+  /* Add page header inside each printable section */
+  [class*="printable-"] {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: white !important;
+  }
+  /* Show only the targeted printable section */
+  body.print-only-onones [class*="printable-"]:not(.printable-onones),
+  body.print-only-goals [class*="printable-"]:not(.printable-goals),
+  body.print-only-careerpath [class*="printable-"]:not(.printable-careerpath),
+  body.print-only-pip [class*="printable-"]:not(.printable-pip),
+  body.print-only-documents [class*="printable-"]:not(.printable-documents) {
+    display: none !important;
+  }
+  /* Hide page header elements when printing a single section */
+  body[class*="print-only-"] header,
+  body[class*="print-only-"] .page-header {
+    display: none !important;
+  }
+}

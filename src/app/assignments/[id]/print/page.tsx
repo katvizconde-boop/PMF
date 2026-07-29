@@ -93,10 +93,66 @@ export default async function PrintView({ params }: { params: { id: string } }) 
           <div><b>Period</b>{new Date(full.cycle.periodStart).toLocaleDateString()} — {new Date(full.cycle.periodEnd).toLocaleDateString()}</div>
           <div><b>Status</b><span className="chip">{full.state.replace("_", " ")}</span></div>
           <div><b>Overall Score</b>{full.overallScore != null ? full.overallScore.toFixed(2) : "—"}</div>
-          <div><b>Recommendation</b>{full.recommendation ?? "—"}</div>
+          {/* Public Recommendation removed — Private Manager Recommendation replaces it */}
         </div>
 
-        {full.template.sections.map((s) => (
+        {/* Private manager recommendation — ONLY shown to MANAGER/HR, never EMPLOYEE.
+            Server-side gate: even if someone bypasses the UI, this is conditional. */}
+        {u.role !== "EMPLOYEE" && (full.privateRecommendation || full.privateRecommendationNotes) && (
+          <div style={{ marginTop: "12px", padding: "12px", border: "2px solid #B45309", borderLeftWidth: "8px", background: "#FEF3C7" }}>
+            <h3 style={{ color: "#B45309", margin: "0 0 8px 0", fontSize: "13px", letterSpacing: "2px" }}>
+              🔒 CONFIDENTIAL — PRIVATE MANAGER RECOMMENDATION (NOT VISIBLE TO EMPLOYEE)
+            </h3>
+            {full.privateRecommendation && (
+              <div><b>Recommendation Type</b>{full.privateRecommendation.replace(/_/g, " ")}</div>
+            )}
+            {full.privateRecommendationNotes && (
+              <div style={{ marginTop: "8px" }}>
+                <b>Justification</b>
+                <div style={{ whiteSpace: "pre-wrap" }}>{full.privateRecommendationNotes}</div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Part I — Key Projects & Activities */}
+        {(() => {
+          let projectRows: { keyResponsibility: string; activitiesProjects: string; remarks: string }[] = [];
+          try {
+            const parsed = full.keyProjectActivities ? JSON.parse(full.keyProjectActivities) : null;
+            if (Array.isArray(parsed)) projectRows = parsed;
+          } catch {}
+          const hasContent = projectRows.some((r) => r.keyResponsibility || r.activitiesProjects || r.remarks);
+          if (!hasContent) return null;
+          return (
+            <div>
+              <h2>Part I — Key Projects & Activities</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th style={{ width: "25%" }}>Key Responsibilities</th>
+                    <th style={{ width: "40%" }}>Activities / Projects</th>
+                    <th>Remarks</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {projectRows.map((r, i) => (
+                    <tr key={i}>
+                      <td style={{ whiteSpace: "pre-wrap" }}>{r.keyResponsibility || "—"}</td>
+                      <td style={{ whiteSpace: "pre-wrap" }}>{r.activitiesProjects || "—"}</td>
+                      <td style={{ whiteSpace: "pre-wrap" }}>{r.remarks || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        })()}
+
+        {full.template.sections
+          // Public RECOMMENDATION section is no longer shown anywhere — use Private Recommendation instead
+          .filter((s) => s.kind !== "RECOMMENDATION")
+          .map((s) => (
           <div key={s.id}>
             <h2>{s.title}{s.weight > 0 ? ` (${s.weight}%)` : ""}</h2>
             {s.kind === "COMMENT" || s.kind === "RECOMMENDATION" ? (

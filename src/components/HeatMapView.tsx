@@ -1,4 +1,5 @@
 "use client";
+import { Icon } from "./Icons";
 type Cell = { avg: number | null; count: number; sum: number };
 type Row = { department: string; cells: Cell[]; overall: number | null };
 
@@ -25,10 +26,10 @@ export function HeatMapView({ cycles, rows }: {
   if (rows.length === 0) {
     return (
       <div>
-        <h2 className="page-title">🗺️ Department Heat Map</h2>
+        <h2 className="page-title inline-flex items-center gap-2"><Icon.BarChart size={24} /> Department Heat Map</h2>
         <p className="page-subtitle mb-6">Visual performance comparison across departments and cycles.</p>
         <div className="card text-center py-16">
-          <div className="text-5xl mb-3">🗺️</div>
+          <div className="flex justify-center mb-3"><Icon.BarChart size={48} className="text-gray-400" /></div>
           <p className="text-gray-500">Once you finalize evaluations, this map lights up with department performance.</p>
         </div>
       </div>
@@ -39,7 +40,7 @@ export function HeatMapView({ cycles, rows }: {
     <div>
       <div className="flex justify-between items-start mb-6 flex-wrap gap-3">
         <div>
-          <h2 className="page-title">🗺️ Department Heat Map</h2>
+          <h2 className="page-title inline-flex items-center gap-2"><Icon.BarChart size={24} /> Department Heat Map</h2>
           <p className="page-subtitle">Average finalized score per department × cycle. Hover any cell for details.</p>
         </div>
       </div>

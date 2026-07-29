@@ -30,6 +30,8 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     "Manager", "Template", "Status", "Overall Score",
     "Section", "Section Weight %", "Personal Rating", "Supervisor Rating", "Section Average", "Weighted Score",
     "Recommendation", "Self Submitted", "Manager Submitted", "Finalized",
+    // Confidential — HR-only export
+    "Private Recommendation (CONFIDENTIAL)", "Private Recommendation Notes (CONFIDENTIAL)",
   ].map(csvEscape).join(","));
 
   for (const a of assignments) {
@@ -50,6 +52,9 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
       a.selfSubmittedAt?.toISOString() ?? "",
       a.managerSubmittedAt?.toISOString() ?? "",
       a.finalizedAt?.toISOString() ?? "",
+      // Confidential — only present in HR-only export
+      a.privateRecommendation ? a.privateRecommendation.replace(/_/g, " ") : "",
+      a.privateRecommendationNotes ?? "",
     ];
 
     if (!bd || bd.sections.length === 0) {

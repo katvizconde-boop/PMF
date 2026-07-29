@@ -11,14 +11,17 @@ import { OneOnOnesSection } from "./OneOnOnesSection";
 import { PIPSection } from "./PIPSection";
 import { CareerPathSection } from "./CareerPathSection";
 import { DocumentsSection } from "./DocumentsSection";
+import { CoManagersSection } from "./CoManagersSection";
+import { Icon } from "./Icons";
 
 export function EmployeeDetail({
-  user, managers, templates, cycles,
+  user, managers, templates, cycles, viewerRole,
 }: {
   user: any;
   managers: { id: string; name: string; position: string | null }[];
   templates: { id: string; name: string; type: string }[];
   cycles: { id: string; name: string }[];
+  viewerRole?: "HR_ADMIN" | "MANAGER" | "EMPLOYEE";
 }) {
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
@@ -73,7 +76,7 @@ export function EmployeeDetail({
           <div className="flex gap-2 flex-wrap">
             {isProb && (
               <button className="btn btn-success" onClick={regularize} title={hasFinalizedProbEval ? "Employee has a finalized probationary evaluation — recommended." : "Move directly to REGULAR status"}>
-                ✓ Move to Regular
+                <span className="inline-flex items-center gap-1"><Icon.Check size={14} /> Move to Regular</span>
               </button>
             )}
             <button className="btn btn-secondary" onClick={() => setEditOpen(true)}>Edit</button>
@@ -82,6 +85,17 @@ export function EmployeeDetail({
         </div>
       </div>
 
+      <CoManagersSection
+        employeeId={user.id}
+        employeeName={`${user.firstName} ${user.lastName}`}
+        primaryManagerId={user.managerId}
+        viewerRole={viewerRole ?? "MANAGER"}
+        managerOptions={managers.map((m) => {
+          const [firstName, ...rest] = m.name.split(" ");
+          return { id: m.id, firstName, lastName: rest.join(" "), position: m.position, email: "" };
+        })}
+      />
+
       <CareerPathSection employeeId={user.id} canEdit={true} />
       <GoalsSection employeeId={user.id} cycles={cycles} canRate={true} canAdd={true} />
       <OneOnOnesSection employeeId={user.id} currentUserCanEdit={true} />
@@ -89,7 +103,7 @@ export function EmployeeDetail({
       <PIPSection employeeId={user.id} currentUserCanEdit={true} />
 
       <div className="card">
-        <h3 className="section-header">🏆 Performance History</h3>
+        <h3 className="section-header inline-flex items-center gap-1"><Icon.Trophy size={16} /> Performance History</h3>
         <PerformanceChart
           history={(user.assignmentsAsEmployee ?? [])
             .filter((a: any) => a.state === "FINALIZED" && a.overallScore != null)

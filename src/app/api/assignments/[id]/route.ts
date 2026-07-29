@@ -29,6 +29,6 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
     });
     return NextResponse.json({ ok: true });
   } catch (e: any) {
-    return new NextResponse(`Delete failed: ${e.message ?? "unknown"}`, { status: 500 });
+    console.error("[API_ERROR]", e); return new NextResponse("Delete failed. The record may have related data that prevents deletion.", { status: 500 });
   }
 }

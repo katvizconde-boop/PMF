@@ -4,10 +4,18 @@ import { getSessionUser } from "@/lib/rbac";
 import { audit } from "@/lib/auth";
 
 // Dynamic import; pdf-parse v2 uses a default export.
+// Wrapped in a 15-second timeout to prevent malicious PDFs from hanging the function.
 async function parsePdf(buf: Buffer): Promise<string> {
+  const PDF_TIMEOUT_MS = 15_000;
   const mod: any = await import("pdf-parse");
   const pdfParse = mod.default || mod;
-  const out = await pdfParse(buf);
+
+  const parsePromise = pdfParse(buf);
+  const timeoutPromise = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error("PDF parsing exceeded 15s timeout (file may be malformed or too complex)")), PDF_TIMEOUT_MS)
+  );
+
+  const out: any = await Promise.race([parsePromise, timeoutPromise]);
   return (out.text as string) || "";
 }
 

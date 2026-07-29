@@ -6,6 +6,7 @@ import { ratingClass } from "@/lib/ui";
 import { EmployeeModal, type EmployeeFormData } from "./EmployeeModal";
 import { COMPANIES, companyChipClass, companyLogoPath } from "@/lib/companies";
 import { PageHeader } from "./PageHeader";
+import { Icon } from "./Icons";
 
 export type EmpRow = {
   id: string; firstName: string; lastName: string; position: string | null;
@@ -98,7 +99,19 @@ export function EmployeesGrid({ initial, managers, departmentsByCompany }: {
   return (
     <div>
       <PageHeader title="Employees" subtitle="Manage your workforce — across all companies and departments" badge={`${initial.length} total`}>
-        <input className="input w-64" placeholder="🔍 Search employees…" value={filter} onChange={(e) => setFilter(e.target.value)} />
+        <input className="input w-64" placeholder="Search employees…" value={filter} onChange={(e) => setFilter(e.target.value)} />
+        <button
+          className="btn btn-secondary inline-flex items-center gap-1"
+          onClick={() => {
+            // Pass through the current company tab as a filter on the export
+            const params = new URLSearchParams();
+            if (company && company !== "ALL") params.set("company", company);
+            window.location.href = `/api/users/export${params.toString() ? "?" + params.toString() : ""}`;
+          }}
+          title="Download employee list as CSV"
+        >
+          <Icon.Download size={14} /> Export CSV
+        </button>
         <button className="btn btn-primary" onClick={() => setOpen(true)}>+ Add Employee / Manager</button>
       </PageHeader>
 
@@ -109,7 +122,7 @@ export function EmployeesGrid({ initial, managers, departmentsByCompany }: {
             <span className="font-medium">{selected.size} selected</span>
             <button onClick={clearSelection} className="text-xs underline opacity-80 hover:opacity-100">Clear</button>
           </div>
-          <button onClick={handleBulkDelete} className="btn bg-red-600 hover:bg-red-700 text-white text-sm">🗑 Delete Selected</button>
+          <button onClick={handleBulkDelete} className="btn bg-red-600 hover:bg-red-700 text-white text-sm"><span className="inline-flex items-center gap-1"><Icon.Trash size={14} /> Delete Selected</span></button>
         </div>
       )}
 
@@ -119,7 +132,7 @@ export function EmployeesGrid({ initial, managers, departmentsByCompany }: {
           onClick={() => setCompany("ALL")}
           className={`chip cursor-pointer transition ${company === "ALL" ? "bg-primary-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
         >
-          🏢 All Companies <span className="ml-1 opacity-60">({initial.length})</span>
+          <span className="inline-flex items-center gap-1"><Icon.Building size={14} /> All Companies</span> <span className="ml-1 opacity-60">({initial.length})</span>
         </button>
         {COMPANIES.map((c) => (
           <button
@@ -148,8 +161,8 @@ export function EmployeesGrid({ initial, managers, departmentsByCompany }: {
           ))}
         </div>
         {filtered.length > 0 && (
-          <button onClick={selectAllVisible} className="text-xs text-gray-500 hover:text-primary-600 mr-2">
-            ☑ Select all visible
+          <button onClick={selectAllVisible} className="text-xs text-gray-500 hover:text-primary-600 mr-2 inline-flex items-center gap-1">
+            <Icon.Check size={12} /> Select all visible
           </button>
         )}
       </div>
@@ -174,7 +187,7 @@ export function EmployeesGrid({ initial, managers, departmentsByCompany }: {
                   }`}
                   title="Select"
                 >
-                  {isSel && "✓"}
+                  {isSel && <Icon.Check size={12} />}
                 </button>
                 {/* Delete button */}
                 <button
@@ -182,7 +195,7 @@ export function EmployeesGrid({ initial, managers, departmentsByCompany }: {
                   className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-red-50 text-red-600 text-sm opacity-0 group-hover:opacity-100 hover:bg-red-100 transition flex items-center justify-center"
                   title="Delete employee"
                 >
-                  ✕
+                  <Icon.X size={14} />
                 </button>
                 <div className="relative z-0 pointer-events-none">
                   <div className="flex justify-between items-start pr-8 pl-8">
@@ -190,7 +203,7 @@ export function EmployeesGrid({ initial, managers, departmentsByCompany }: {
                       {e.profilePicture ? (
                         <img src={e.profilePicture} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm flex-shrink-0" />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-lg flex-shrink-0">👤</div>
+                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 flex-shrink-0"><Icon.User size={20} /></div>
                       )}
                       <div>
                         <h3 className="font-bold text-gray-800 leading-tight">{e.firstName} {e.lastName}</h3>
@@ -210,8 +223,8 @@ export function EmployeesGrid({ initial, managers, departmentsByCompany }: {
                     </div>
                   )}
                   <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-3 text-xs text-gray-500 flex-wrap">
-                    <span>📁 {e.department ?? "—"}</span>
-                    <span>📋 {e.evalCount} {e.evalCount === 1 ? "eval" : "evals"}</span>
+                    <span className="inline-flex items-center gap-1"><Icon.Folder size={12} /> {e.department ?? "—"}</span>
+                    <span className="inline-flex items-center gap-1"><Icon.Clipboard size={12} /> {e.evalCount} {e.evalCount === 1 ? "eval" : "evals"}</span>
                     <span className="ml-auto flex gap-1">
                       {e.role === "HR_ADMIN" && <span className="chip bg-purple-100 text-purple-700">HR</span>}
                       {e.role === "MANAGER" && <span className="chip bg-blue-100 text-blue-700">Manager</span>}

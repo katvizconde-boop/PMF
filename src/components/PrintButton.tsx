@@ -1,4 +1,5 @@
 "use client";
+import { Icon } from "./Icons";
 export function PrintButton() {
   return (
     <div style={{ display: "flex", gap: 8, padding: 10, background: "#fffbe6", border: "1px solid #fcd34d", borderRadius: 6, marginBottom: 16 }}>
@@ -6,7 +7,7 @@ export function PrintButton() {
         onClick={() => window.print()}
         style={{ background: "#111", color: "#fff", border: 0, padding: "8px 14px", borderRadius: 4, cursor: "pointer", fontSize: 13 }}
       >
-        🖨 Print / Save as PDF
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><Icon.Print size={14} /> Print / Save as PDF</span>
       </button>
       <button
         onClick={() => window.close()}

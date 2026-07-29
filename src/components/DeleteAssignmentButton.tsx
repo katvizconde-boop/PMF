@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Icon } from "./Icons";
 
 export function DeleteAssignmentButton({
   assignmentId, employeeName, cycleName,
@@ -26,7 +27,7 @@ export function DeleteAssignmentButton({
   return (
     <>
       <button onClick={() => setOpen(true)} className="btn btn-danger text-xs">
-        🗑 Delete evaluation
+        <span className="inline-flex items-center gap-1"><Icon.Trash size={14} /> Delete evaluation</span>
       </button>
 
       {open && (
@@ -35,7 +36,7 @@ export function DeleteAssignmentButton({
             {/* Header */}
             <div className="bg-gradient-to-r from-red-600 to-rose-500 text-white p-5">
               <div className="flex items-center gap-3">
-                <div className="text-3xl">⚠️</div>
+                <Icon.Alert size={32} />
                 <div>
                   <h2 className="text-lg font-bold">Permanently delete this evaluation?</h2>
                   <p className="text-sm text-red-50">This action cannot be undone.</p>
@@ -66,7 +67,7 @@ export function DeleteAssignmentButton({
                 />
               </div>
 
-              {err && <div className="text-sm text-red-700 bg-red-50 border border-red-100 rounded-lg p-2.5">⚠ {err}</div>}
+              {err && <div className="text-sm text-red-700 bg-red-50 border border-red-100 rounded-lg p-2.5 inline-flex items-center gap-1"><Icon.Alert size={14} className="text-amber-600" /> {err}</div>}
             </div>
 
             {/* Footer */}
@@ -77,7 +78,7 @@ export function DeleteAssignmentButton({
                 disabled={confirmText !== "DELETE" || busy}
                 className="btn btn-danger text-sm disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                {busy ? "Deleting…" : "🗑 Permanently delete"}
+                {busy ? "Deleting…" : <span className="inline-flex items-center gap-1"><Icon.Trash size={14} /> Permanently delete</span>}
               </button>
             </div>
           </div>

@@ -2,8 +2,20 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/rbac";
 import { audit } from "@/lib/auth";
+import { validateDocumentFile } from "@/lib/fileValidation";
 
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
+
+const ALLOWED_DOC_MIMES = [
+  "application/pdf",
+  "image/png",
+  "image/jpeg",
+  "image/gif",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",  // docx
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",        // xlsx
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",// pptx
+  "application/zip", // raw zip too
+];
 
 async function canAccess(actor: { id: string; role: string }, employeeId: string) {
   if (actor.role === "HR_ADMIN") return true;
@@ -43,13 +55,29 @@ export async function POST(req: Request) {
   if (file.size > MAX_BYTES) return new NextResponse("File too large (max 5 MB)", { status: 413 });
 
   const buf = Buffer.from(await file.arrayBuffer());
-  const dataUrl = `data:${file.type || "application/octet-stream"};base64,${buf.toString("base64")}`;
+
+  // Validate by magic bytes (don't trust client-supplied MIME type)
+  let verifiedMime: string;
+  try {
+    const result = validateDocumentFile(buf, file.type, ALLOWED_DOC_MIMES.concat(["application/zip"]));
+    verifiedMime = result.mime;
+  } catch (e: any) {
+    return new NextResponse(`File rejected: ${e.message}`, { status: 400 });
+  }
+
+  // Sanitize filename — strip path separators and control characters
+  const safeName = (file.name || "file")
+    .replace(/[\\/]/g, "_")
+    .replace(/[\x00-\x1f]/g, "")
+    .slice(0, 255);
+
+  const dataUrl = `data:${verifiedMime};base64,${buf.toString("base64")}`;
   const doc = await db.document.create({
     data: {
-      userId, type, name: file.name, mimeType: file.type || "application/octet-stream",
+      userId, type, name: safeName, mimeType: verifiedMime,
       size: file.size, fileData: dataUrl, notes: notes || null, uploadedById: u.id,
     },
   });
-  await audit(u.id, "UPLOAD_DOCUMENT", "Document", doc.id, { userId, type, size: file.size });
+  await audit(u.id, "UPLOAD_DOCUMENT", "Document", doc.id, { userId, type, size: file.size, mime: verifiedMime });
   return NextResponse.json({ ok: true, id: doc.id });
 }

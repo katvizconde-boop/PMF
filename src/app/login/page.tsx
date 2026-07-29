@@ -1,6 +1,6 @@
 "use client";
 import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
@@ -18,109 +18,120 @@ export default function LoginPage() {
     setError("");
     const res = await signIn("credentials", { email, password, redirect: false });
     setLoading(false);
-    if (res?.error) setError("Invalid email or password");
+    if (res?.error) setError("Invalid email or password.");
     else router.push("/dashboard");
   }
-  const quick = (e: string) => { setEmail(e); setPassword("password123"); };
 
   return (
     <div className="min-h-screen flex items-stretch bg-canvas">
       {/* ── LEFT: Hero ─────────────────────────── */}
-      <div className="hidden lg:flex flex-col justify-between flex-1 p-10 xl:p-14 bg-gradient-to-br from-primary-50 via-white to-primary-50/40 border-r border-gray-200">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-gray-200 text-xs font-semibold text-gray-700 mb-6 shadow-soft">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary-600" />
+      <div className="hidden lg:flex flex-col justify-between flex-1 p-10 xl:p-14 bg-gradient-to-br from-primary-700 via-primary-600 to-primary-500 text-white relative overflow-hidden">
+        {/* subtle deco grid lines */}
+        <div className="absolute inset-0 opacity-10" style={{
+          backgroundImage: "linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)",
+          backgroundSize: "32px 32px",
+        }} />
+        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-32 -right-16 w-[28rem] h-[28rem] rounded-full bg-primary-300/20 blur-3xl" />
+
+        <div className="relative z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur border border-white/20 text-xs font-semibold mb-6">
+            <span className="w-1.5 h-1.5 rounded-full bg-white" />
             Performance Management Form
           </div>
-          <h1 className="text-5xl xl:text-6xl font-bold text-navy-800 tracking-tight mb-3" style={{ fontFamily: "'Plus Jakarta Sans', Inter, sans-serif" }}>
-            Welcome Back!
+          <h1 className="text-5xl xl:text-6xl font-bold tracking-tight mb-3" style={{ fontFamily: "'Plus Jakarta Sans', Inter, sans-serif" }}>
+            Welcome Back
           </h1>
-          <p className="text-base xl:text-lg text-gray-600 max-w-lg">
+          <p className="text-base xl:text-lg text-white/85 max-w-lg">
             Sign in to continue to your PMF System — your team's performance, in one place.
           </p>
         </div>
 
-        <div className="flex-1 flex items-center justify-center my-6">
+        <div className="flex-1 flex items-center justify-center my-6 relative z-10">
           <DashboardPreview />
         </div>
 
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-4 gap-3 relative z-10">
           {[
-            { icon: ListIcon,    title: "Structured", desc: "Clear rubrics" },
-            { icon: ConnectIcon, title: "Connected",  desc: "Unified data" },
-            { icon: ChatIcon,    title: "Continuous", desc: "Always-on feedback" },
-            { icon: ChartIcon,   title: "Measurable", desc: "Real outcomes" },
-          ].map((f) => (
-            <div key={f.title} className="text-center flex flex-col items-center min-h-[6rem]">
-              <div className="w-12 h-12 rounded-xl bg-white border border-gray-200 flex items-center justify-center mb-2 text-primary-600 shadow-soft">
+            { icon: LineIcon,     title: "Structured",  desc: "Clear rubrics" },
+            { icon: BarIcon,      title: "Connected",   desc: "Unified data" },
+            { icon: GrowthIcon,   title: "Continuous",  desc: "Always-on feedback" },
+            { icon: PieIcon,      title: "Measurable",  desc: "Real outcomes" },
+          ].map((f, i) => (
+            <div
+              key={f.title}
+              className="hero-feature group text-center flex flex-col items-center min-h-[6rem] bg-white/10 backdrop-blur rounded-xl p-3 border border-white/15 cursor-default transition-all duration-300 hover:bg-white/20 hover:border-white/40 hover:-translate-y-1 hover:shadow-xl"
+              style={{ animationDelay: `${0.4 + i * 0.1}s` }}
+            >
+              <div className="w-10 h-10 rounded-lg bg-white/15 flex items-center justify-center mb-2 text-white transition-all duration-300 group-hover:bg-white/30 group-hover:rotate-6 group-hover:scale-110">
                 <f.icon />
               </div>
-              <div className="text-sm font-semibold text-gray-800">{f.title}</div>
-              <div className="text-xs text-gray-500 mt-0.5">{f.desc}</div>
+              <div className="text-sm font-semibold">{f.title}</div>
+              <div className="text-xs text-white/70 mt-0.5 transition-colors group-hover:text-white">{f.desc}</div>
             </div>
           ))}
         </div>
       </div>
 
       {/* ── RIGHT: Sign-in card ─────────────────── */}
-      <div className="flex-1 lg:max-w-[520px] flex items-center justify-center p-6 lg:p-10 xl:p-14">
+      <div className="flex-1 lg:max-w-[520px] flex items-center justify-center p-6 lg:p-10 xl:p-14 bg-white">
         <div className="w-full max-w-md">
           {/* Logo + name */}
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-12 h-12 rounded-xl bg-primary-600 flex items-center justify-center" style={{ boxShadow: "0 4px 12px rgba(37,99,235,0.25)" }}>
-              <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
-                <path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zM8 11c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-              </svg>
+          <div className="flex items-center gap-3 mb-10">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-600 to-primary-700 flex items-center justify-center text-white" style={{ boxShadow: "0 6px 16px rgba(37,99,235,0.30)" }}>
+              <BriefcaseIcon />
             </div>
             <div>
-              <div className="text-xl font-bold text-navy-800 tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', Inter, sans-serif" }}>PMF SYSTEM</div>
+              <div className="text-xl font-bold text-navy-800 tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', Inter, sans-serif" }}>PMF System</div>
               <div className="text-xs text-gray-500">Performance Management Form</div>
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold text-gray-900 mb-1">Sign in to your account</h2>
-          <p className="text-sm text-gray-500 mb-6">Welcome — enter your details to continue.</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Sign in</h2>
 
           <form onSubmit={submit} className="space-y-4">
             <div>
-              <label className="label">Email address</label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="8" r="4" />
-                    <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" />
-                  </svg>
-                </span>
-                <input
-                  className="input pl-10"
-                  type="email"
-                  placeholder="you@company.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
+              <label className="label">Email</label>
+              <input
+                className="input"
+                type="email"
+                placeholder="you@company.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
 
             <div>
               <label className="label">Password</label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="4" y="11" width="16" height="10" rx="2" />
-                    <path d="M8 11V7a4 4 0 1 1 8 0v4" />
-                  </svg>
-                </span>
                 <input
-                  className="input pl-10 pr-10"
+                  className="input pr-12"
                   type={showPw ? "text" : "password"}
-                  placeholder="••••••••"
+                  placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
-                <button type="button" onClick={() => setShowPw((s) => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 text-sm" aria-label="Toggle password">
-                  {showPw ? "Hide" : "Show"}
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => setShowPw((s) => !s)}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center rounded-md text-gray-500 hover:text-primary-700 hover:bg-primary-50 active:scale-90 transition cursor-pointer"
+                  aria-label={showPw ? "Hide password" : "Show password"}
+                  title={showPw ? "Hide password" : "Show password"}
+                >
+                  {showPw ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  )}
                 </button>
               </div>
             </div>
@@ -130,137 +141,217 @@ export default function LoginPage() {
                 <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="rounded text-primary-600 focus:ring-primary-400" />
                 Remember me
               </label>
-              <a href="#" className="text-primary-600 hover:text-primary-700 font-medium">Forgot password?</a>
+              <a href="/forgot-password" className="text-primary-600 hover:text-primary-700 font-medium">Forgot password?</a>
             </div>
 
             {error && <div className="text-sm text-red-700 bg-red-50 border border-red-100 rounded-lg p-2.5">{error}</div>}
 
-            <button className="btn btn-primary w-full py-2.5" disabled={loading}>
+            <button className="w-full py-2.5 rounded-lg font-semibold text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 shadow-md hover:shadow-lg transition active:scale-[0.98] disabled:opacity-50" disabled={loading}>
               {loading ? "Signing in…" : "Sign in"}
             </button>
           </form>
-
-          <div className="my-5 flex items-center gap-3 text-xs text-gray-400">
-            <div className="flex-1 border-t border-gray-200" />
-            <span>OR</span>
-            <div className="flex-1 border-t border-gray-200" />
-          </div>
-
-          <button type="button" className="btn btn-secondary w-full py-2.5 flex items-center justify-center gap-2.5">
-            <svg width="16" height="16" viewBox="0 0 23 23" xmlns="http://www.w3.org/2000/svg">
-              <rect x="1"  y="1"  width="10" height="10" fill="#f25022"/>
-              <rect x="12" y="1"  width="10" height="10" fill="#7fba00"/>
-              <rect x="1"  y="12" width="10" height="10" fill="#00a4ef"/>
-              <rect x="12" y="12" width="10" height="10" fill="#ffb900"/>
-            </svg>
-            <span>Sign in with Microsoft</span>
-          </button>
-
-          <p className="text-center text-xs text-gray-500 mt-6">
-            Need help? <a href="mailto:hr@sevengen.com" className="text-primary-600 font-medium hover:underline">Contact Support</a>
-          </p>
-
-          <div className="mt-6 pt-5 border-t border-gray-100">
-            <p className="text-[11px] text-gray-400 mb-2 text-center uppercase tracking-wide">Demo logins · password: <code>password123</code></p>
-            <div className="flex flex-wrap gap-1.5 justify-center">
-              <button type="button" className="text-xs px-2.5 py-1 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 font-medium" onClick={() => quick("hr@company.com")}>HR</button>
-              <button type="button" className="text-xs px-2.5 py-1 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 font-medium" onClick={() => quick("manager@company.com")}>Manager</button>
-              <button type="button" className="text-xs px-2.5 py-1 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 font-medium" onClick={() => quick("employee@company.com")}>Employee</button>
-              <button type="button" className="text-xs px-2.5 py-1 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 font-medium" onClick={() => quick("probationary@company.com")}>Probationary</button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
   );
 }
 
-// ── Outline icons ────────────────────────────────────────
-const stroke = { fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+// ── Outline icons (line-style, matching reference) ──────────────────
+const stroke = { fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
 
-function ListIcon()    { return <svg width="20" height="20" viewBox="0 0 24 24" {...stroke}><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>; }
-function ConnectIcon() { return <svg width="20" height="20" viewBox="0 0 24 24" {...stroke}><circle cx="12" cy="12" r="3"/><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 7l3 3M17 7l-3 3M7 17l3-3M17 17l-3-3"/></svg>; }
-function ChatIcon()    { return <svg width="20" height="20" viewBox="0 0 24 24" {...stroke}><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8l-4 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M8 10h8M8 13h5"/></svg>; }
-function ChartIcon()   { return <svg width="20" height="20" viewBox="0 0 24 24" {...stroke}><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>; }
+function LineIcon()      { return <svg width="20" height="20" viewBox="0 0 24 24" {...stroke}><path d="M3 17l6-6 4 4 8-8"/><circle cx="3" cy="17" r="1.2"/><circle cx="9" cy="11" r="1.2"/><circle cx="13" cy="15" r="1.2"/><circle cx="21" cy="7" r="1.2"/></svg>; }
+function BarIcon()       { return <svg width="20" height="20" viewBox="0 0 24 24" {...stroke}><path d="M4 20V12M9 20V8M14 20V14M19 20V4"/><path d="M3 20h18"/></svg>; }
+function GrowthIcon()    { return <svg width="20" height="20" viewBox="0 0 24 24" {...stroke}><path d="M4 20V13M9 20V9M14 20V11M19 20V5"/><path d="M3 20h18"/><path d="M4 8l5-3 5 2 5-4"/><path d="M19 3v3h-3"/></svg>; }
+function PieIcon()       { return <svg width="20" height="20" viewBox="0 0 24 24" {...stroke}><circle cx="12" cy="12" r="9"/><path d="M12 3v9l7 4"/></svg>; }
+function GlobeIcon()     { return <svg width="20" height="20" viewBox="0 0 24 24" {...stroke}><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>; }
+function BuildingIcon()  { return <svg width="20" height="20" viewBox="0 0 24 24" {...stroke}><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M8 7h2M14 7h2M8 11h2M14 11h2M8 15h2M14 15h2"/><path d="M10 21v-3h4v3"/></svg>; }
+function BriefcaseIcon() { return <svg width="22" height="22" viewBox="0 0 24 24" {...stroke}><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/></svg>; }
+function DocIcon()       { return <svg width="20" height="20" viewBox="0 0 24 24" {...stroke}><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M8 13h8M8 17h5"/></svg>; }
+function MailIcon()      { return <svg width="16" height="16" viewBox="0 0 24 24" {...stroke}><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>; }
+function LockIcon()      { return <svg width="16" height="16" viewBox="0 0 24 24" {...stroke}><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/></svg>; }
 
-/** Minimalist dashboard preview — original composition */
+/** Dashboard preview — corporate blue, minimal */
+/** Animated count-up for numbers in the dashboard preview. */
+function useCountUp(target: number, duration = 1400, start = false) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    if (!start) return;
+    let raf = 0; const t0 = performance.now();
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - t0) / duration);
+      const eased = 1 - Math.pow(1 - p, 3); // easeOutCubic
+      setVal(target * eased);
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration, start]);
+  return val;
+}
+
 function DashboardPreview() {
+  const [mounted, setMounted] = useState(false);
+  const [hoverPoint, setHoverPoint] = useState<number | null>(null);
+  useEffect(() => { const t = setTimeout(() => setMounted(true), 200); return () => clearTimeout(t); }, []);
+
+  // Count-up values
+  const reviews    = useCountUp(128, 1400, mounted);
+  const goals      = useCountUp(86,  1400, mounted);
+  const pending    = useCountUp(14,  1400, mounted);
+  const completion = useCountUp(82,  1600, mounted);
+  const avgScore   = useCountUp(4.6, 1600, mounted);
+
+  // Line chart points
+  const xs = [8, 56, 104, 152, 200, 248, 296, 344];
+  const ys = [70, 64, 68, 52, 48, 36, 28, 18];
+  const labels = ["Q3 '24", "Q4 '24", "Q1 '25", "Q2 '25", "Q3 '25", "Q4 '25", "Q1 '26", "Q2 '26"];
+  const points = xs.map((x, i) => ({ x, y: ys[i], label: labels[i], score: (5 - (ys[i] - 18) / 20).toFixed(1) }));
+  const linePath  = `M 8 70 L 56 64 L 104 68 L 152 52 L 200 48 L 248 36 L 296 28 L 344 18`;
+  const fillPath  = `${linePath} L 344 102 L 8 102 Z`;
+
   return (
-    <div className="relative w-full max-w-[560px]" style={{ aspectRatio: "560 / 360" }}>
+    <div className="relative w-full max-w-[560px] group/hero" style={{ aspectRatio: "560 / 360" }}>
       {/* Main browser window */}
-      <div className="absolute inset-x-0 inset-y-4 bg-white rounded-xl border border-gray-200 overflow-hidden"
-           style={{ boxShadow: "0 12px 32px rgba(15,23,42,0.08)" }}>
+      <div className="absolute inset-x-0 inset-y-4 bg-white rounded-xl overflow-hidden transition-transform duration-500 hover:scale-[1.02]"
+           style={{ boxShadow: "0 24px 60px rgba(15,23,42,0.25)" }}>
         {/* Browser chrome */}
         <div className="flex items-center gap-2 px-4 h-8 bg-gray-50 border-b border-gray-100">
-          <span className="w-2 h-2 rounded-full bg-gray-300" />
-          <span className="w-2 h-2 rounded-full bg-gray-300" />
-          <span className="w-2 h-2 rounded-full bg-gray-300" />
+          <span className="w-2 h-2 rounded-full bg-red-400/70" />
+          <span className="w-2 h-2 rounded-full bg-amber-400/70" />
+          <span className="w-2 h-2 rounded-full bg-emerald-400/70" />
           <div className="ml-3 px-3 py-0.5 bg-white rounded border border-gray-100 text-[10px] text-gray-400 font-mono">
             pmf.sevengen.com / dashboard
           </div>
+          {/* Tiny live indicator */}
+          <span className="ml-auto inline-flex items-center gap-1 text-[8px] font-bold text-emerald-600">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60 animate-ping" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            </span>
+            LIVE
+          </span>
         </div>
 
         {/* KPI tiles */}
         <div className="grid grid-cols-3 gap-3 p-4">
           {[
-            { label: "REVIEWS",     value: "128", trend: "+18", up: true },
-            { label: "GOALS MET",   value: "86%", trend: "+4.2%", up: true },
-            { label: "PENDING",     value: "14",  trend: "−6",   up: false },
+            { label: "REVIEWS",   value: Math.round(reviews).toString(),        trend: "+18",   up: true },
+            { label: "GOALS MET", value: `${Math.round(goals)}%`,                trend: "+4.2%", up: true },
+            { label: "PENDING",   value: Math.round(pending).toString(),         trend: "−6",    up: false },
           ].map((k) => (
-            <div key={k.label} className="rounded-lg bg-gray-50 border border-gray-100 p-2.5">
+            <div key={k.label} className="rounded-lg bg-gray-50 border border-gray-100 p-2.5 transition-all hover:bg-primary-50 hover:border-primary-200 hover:-translate-y-0.5 cursor-pointer">
               <div className="text-[9px] tracking-widest font-bold text-gray-500">{k.label}</div>
-              <div className="text-xl font-bold text-gray-900 mt-0.5">{k.value}</div>
+              <div className="text-xl font-bold text-gray-900 mt-0.5 tabular-nums">{k.value}</div>
               <div className={`text-[10px] font-semibold mt-1 ${k.up ? "text-emerald-600" : "text-gray-500"}`}>{k.up ? "↗ " : ""}{k.trend}</div>
             </div>
           ))}
         </div>
 
-        {/* Line chart */}
+        {/* Line chart with interactive points */}
         <div className="px-4 pb-4">
-          <svg viewBox="0 0 360 110" width="100%" height="110">
+          <svg viewBox="0 0 360 110" width="100%" height="110" className="overflow-visible">
             {[0, 1, 2, 3].map((i) => (
               <line key={i} x1="8" y1={8 + i * 30} x2="352" y2={8 + i * 30} stroke="#f1f5f9" strokeWidth="1" />
             ))}
             <defs>
               <linearGradient id="lcA" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%"   stopColor="#3b82f6" stopOpacity="0.25" />
-                <stop offset="100%" stopColor="#3b82f6" stopOpacity="0"    />
+                <stop offset="0%"   stopColor="#3b82f6" stopOpacity="0.28" />
+                <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
               </linearGradient>
             </defs>
-            <path d="M 8 70 L 56 64 L 104 68 L 152 52 L 200 48 L 248 36 L 296 28 L 344 18 L 344 102 L 8 102 Z" fill="url(#lcA)" />
-            <path d="M 8 70 L 56 64 L 104 68 L 152 52 L 200 48 L 248 36 L 296 28 L 344 18" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            {[8, 56, 104, 152, 200, 248, 296, 344].map((x, i) => {
-              const ys = [70, 64, 68, 52, 48, 36, 28, 18];
-              return <circle key={i} cx={x} cy={ys[i]} r="2.5" fill="white" stroke="#2563eb" strokeWidth="2" />;
-            })}
+            {/* Animated fill that fades in */}
+            <path d={fillPath} fill="url(#lcA)" style={{ opacity: mounted ? 1 : 0, transition: "opacity 1.2s ease-out 0.6s" }} />
+            {/* Animated stroke that draws itself */}
+            <path
+              d={linePath}
+              fill="none"
+              stroke="#2563eb"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeDasharray="500"
+              strokeDashoffset={mounted ? 0 : 500}
+              style={{ transition: "stroke-dashoffset 1.4s ease-out" }}
+            />
+            {/* Interactive points */}
+            {points.map((pt, i) => (
+              <g key={i}
+                 onMouseEnter={() => setHoverPoint(i)}
+                 onMouseLeave={() => setHoverPoint(null)}
+                 style={{ cursor: "pointer" }}>
+                {/* Larger transparent hit target */}
+                <circle cx={pt.x} cy={pt.y} r="12" fill="transparent" />
+                <circle
+                  cx={pt.x}
+                  cy={pt.y}
+                  r={hoverPoint === i ? 5 : 2.5}
+                  fill={hoverPoint === i ? "#2563eb" : "white"}
+                  stroke="#2563eb"
+                  strokeWidth="2"
+                  style={{ transition: "r 0.2s, fill 0.2s, opacity 0.5s", opacity: mounted ? 1 : 0, transitionDelay: `${0.6 + i * 0.1}s` }}
+                />
+                {hoverPoint === i && (
+                  <g>
+                    {/* Vertical guide line */}
+                    <line x1={pt.x} y1={pt.y + 8} x2={pt.x} y2="102" stroke="#2563eb" strokeWidth="1" strokeDasharray="2 2" opacity="0.4" />
+                    {/* Tooltip */}
+                    <rect x={pt.x - 32} y={pt.y - 32} width="64" height="24" rx="4" fill="#0f172a" />
+                    <text x={pt.x} y={pt.y - 20} textAnchor="middle" fontSize="8" fill="#fff" fontFamily="Plus Jakarta Sans, Inter, sans-serif">{pt.label}</text>
+                    <text x={pt.x} y={pt.y - 12} textAnchor="middle" fontSize="9" fontWeight="bold" fill="#fbbf24">{pt.score} / 5</text>
+                  </g>
+                )}
+              </g>
+            ))}
           </svg>
         </div>
       </div>
 
-      {/* Floating completion card */}
-      <div className="absolute -left-2 top-0 bg-white rounded-lg border border-gray-200 p-3 w-44"
-           style={{ boxShadow: "0 8px 24px rgba(15,23,42,0.10)" }}>
-        <div className="text-[10px] tracking-widest font-bold text-gray-500">COMPLETION</div>
-        <div className="text-2xl font-bold text-gray-900 mt-0.5">82%</div>
+      {/* Floating completion card — gently floats + hover lifts */}
+      <div className="hero-float-card absolute -left-2 top-0 bg-white rounded-lg border border-gray-200 p-3 w-44 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl cursor-pointer"
+           style={{ boxShadow: "0 8px 24px rgba(15,23,42,0.10)", animation: "heroFloat 6s ease-in-out infinite" }}>
+        <div className="flex items-center gap-2">
+          <div className="text-primary-600"><PieIcon /></div>
+          <div className="text-[10px] tracking-widest font-bold text-gray-500">COMPLETION</div>
+        </div>
+        <div className="text-2xl font-bold text-gray-900 mt-0.5 tabular-nums">{Math.round(completion)}%</div>
         <div className="h-1.5 rounded-full bg-gray-100 mt-2 overflow-hidden">
-          <div className="h-full rounded-full bg-primary-600" style={{ width: "82%" }} />
+          <div className="h-full rounded-full bg-gradient-to-r from-primary-600 to-primary-400 transition-all duration-1000 ease-out" style={{ width: `${completion}%` }} />
         </div>
         <div className="text-[10px] text-gray-500 mt-1">Reviews done this cycle</div>
       </div>
 
-      {/* Floating avg score card */}
-      <div className="absolute -right-2 -bottom-2 bg-white rounded-lg border border-gray-200 p-3 w-48"
-           style={{ boxShadow: "0 8px 24px rgba(15,23,42,0.10)" }}>
+      {/* Floating avg score card — opposite float phase */}
+      <div className="hero-float-card absolute -right-2 -bottom-2 bg-white rounded-lg border border-gray-200 p-3 w-48 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl cursor-pointer"
+           style={{ boxShadow: "0 8px 24px rgba(15,23,42,0.10)", animation: "heroFloat 7s ease-in-out -3.5s infinite" }}>
         <div className="flex items-center justify-between">
-          <div className="text-[10px] tracking-widest font-bold text-gray-500">AVG SCORE</div>
+          <div className="flex items-center gap-2">
+            <div className="text-primary-600"><BarIcon /></div>
+            <div className="text-[10px] tracking-widest font-bold text-gray-500">AVG SCORE</div>
+          </div>
           <span className="text-[10px] text-emerald-600 font-bold">↑ 0.3</span>
         </div>
         <div className="flex items-baseline gap-1 mt-0.5">
-          <span className="text-2xl font-bold text-gray-900">4.6</span>
+          <span className="text-2xl font-bold text-gray-900 tabular-nums">{avgScore.toFixed(1)}</span>
           <span className="text-xs text-gray-400">/ 5.0</span>
         </div>
         <div className="text-[10px] text-gray-500 mt-1">Goal: 4.5 · On track</div>
       </div>
+
+      {/* Local keyframes — scoped via global style tag */}
+      <style jsx global>{`
+        @keyframes heroFloat {
+          0%, 100% { transform: translateY(0px); }
+          50%      { transform: translateY(-8px); }
+        }
+        @keyframes heroFadeUp {
+          from { opacity: 0; transform: translateY(12px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .hero-feature {
+          opacity: 0;
+          animation: heroFadeUp 0.6s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 }

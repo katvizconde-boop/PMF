@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/rbac";
 import { audit } from "@/lib/auth";
+import { validateImageDataUrl } from "@/lib/fileValidation";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -14,8 +15,10 @@ export async function PATCH(req: Request) {
 
   // Reject base64 picture larger than ~600 KB to keep DB rows small
   if (b.profilePicture && typeof b.profilePicture === "string") {
-    if (!b.profilePicture.startsWith("data:image/")) return new NextResponse("Invalid picture format", { status: 400 });
     if (b.profilePicture.length > 800_000) return new NextResponse("Profile picture too large (max ~600KB)", { status: 413 });
+    // Verify it's actually a PNG/JPEG by reading magic bytes (blocks SVG XSS)
+    try { validateImageDataUrl(b.profilePicture); }
+    catch (e: any) { return new NextResponse(`Profile picture rejected: ${e.message}`, { status: 400 }); }
   }
 
   const data: any = {};

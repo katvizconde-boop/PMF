@@ -11,6 +11,9 @@ model User {
   id             String       @id @default(cuid())
   email          String       @unique
   passwordHash   String
+  mustChangePassword Boolean @default(false)
+  failedLoginCount Int      @default(0)
+  lockedUntil    DateTime?
   firstName      String
   middleName     String?
   lastName       String
@@ -28,6 +31,12 @@ model User {
   managerId      String?
   manager        User?        @relation("Reports", fields: [managerId], references: [id])
   reports        User[]       @relation("Reports")
+  // ── Co-managers (RythmosDB-style team setup) ──
+  // An employee can have additional managers who can also view + edit their PMF.
+  // The primary `manager` (above) still owns the relationship for HR purposes;
+  // co-managers are collaborators with equal access during MANAGER_REVIEW.
+  coManagerOf    CoManager[]  @relation("CoManagedEmployee")  // I am the employee — who else manages me
+  asCoManager    CoManager[]  @relation("CoManagerUser")      // I am a co-manager — whose teams am I on
   assignmentsAsEmployee Assignment[] @relation("EmpAssignments")
   assignmentsAsManager  Assignment[] @relation("MgrAssignments")
   goals          Goal[]       @relation("UserGoals")
@@ -135,6 +144,15 @@ model Assignment {
   state                String     @default("SELF_ASSESS") // SELF_ASSESS | MANAGER_REVIEW | HR_REVIEW | FINALIZED
   overallScore         Float?
   recommendation       String?
+  // ── Private (confidential) manager recommendation ──
+  // Visible ONLY to the manager who created it and HR_ADMIN. Never sent to the employee.
+  // Used for sensitive recommendations like salary increase, PIP, role change that may not be approved.
+  privateRecommendation       String?    // NO_ACTION | SALARY_INCREASE | PROMOTION | LATERAL_MOVE | PIP | TERMINATION_REVIEW | OTHER
+  privateRecommendationNotes  String?    // Free-form justification, max 5000 chars (enforced at API)
+  // ── Key Projects & Activities (Part I of the PMF) ──
+  // JSON array of rows: [{ keyResponsibility, activitiesProjects, remarks }]
+  // Editable by EMPLOYEE during SELF_ASSESS; read-only for MANAGER + HR after that.
+  keyProjectActivities        String?    // JSON-encoded array
   selfSubmittedAt      DateTime?
   managerSubmittedAt   DateTime?
   hrApprovedAt         DateTime?
@@ -144,6 +162,9 @@ model Assignment {
   employeeSignature    String?    // base64 data URL
   managerSignature     String?
   hrSignature          String?
+  employeeSignatureName String?   // manually typed by signer at sign time
+  managerSignatureName  String?
+  hrSignatureName       String?
   employeeSignedAt     DateTime?
   managerSignedAt      DateTime?
   hrSignedAt           DateTime?
@@ -300,4 +321,22 @@ model AuditLog {
   resourceId   String?
   detail       String?
   createdAt    DateTime @default(now())
+}
+
+// ── Co-Manager (multi-manager) relationship ──
+// Allows multiple managers to share access to one employee's PMF.
+// Used for RythmosDB-style teams where 2-3 managers collaborate on evaluations.
+// Primary manager is still on User.managerId — this table adds additional collaborators.
+model CoManager {
+  id          String   @id @default(cuid())
+  employeeId  String
+  managerId   String
+  notes       String?  // Optional: HR's note about the arrangement
+  createdAt   DateTime @default(now())
+
+  employee    User     @relation("CoManagedEmployee", fields: [employeeId], references: [id], onDelete: Cascade)
+  manager     User     @relation("CoManagerUser",     fields: [managerId],  references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, managerId])
+  @@index([managerId])
 }

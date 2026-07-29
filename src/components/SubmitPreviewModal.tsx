@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { LinkedText } from "@/lib/linkify";
+import { Icon } from "./Icons";
 
 type Question = { id: string; prompt: string; description?: string | null; inputType: string; options: string | null; required: boolean };
 type Section = { id: string; title: string; kind: string; weight: number; questions: Question[] };
@@ -35,6 +36,12 @@ export function SubmitPreviewModal({
   const missing: string[] = [];
   let totalRated = 0, totalRatings = 0;
   for (const s of sections) {
+    // ── Recommendation section is now optional ──
+    // The Private Manager Recommendation field has replaced this as the primary
+    // mechanism for capturing managerial outcomes. The public Recommendation
+    // stays in the template (visible to manager + HR) but no longer blocks submission.
+    const isRecommendationSection = s.kind === "RECOMMENDATION";
+
     for (const q of s.questions) {
       if (q.inputType === "rating") {
         totalRatings++;
@@ -43,7 +50,7 @@ export function SubmitPreviewModal({
         if (form[q.id]?.rating && !form[q.id]?.comment?.trim()) {
           missing.push(`${s.title} → ${q.prompt} (justification missing)`);
         }
-      } else if (q.required && !form[q.id]?.comment?.trim() && q.inputType === "select") {
+      } else if (q.required && !form[q.id]?.comment?.trim() && q.inputType === "select" && !isRecommendationSection) {
         missing.push(`${s.title} → ${q.prompt}`);
       }
     }
@@ -64,12 +71,12 @@ export function SubmitPreviewModal({
         {/* Header */}
         <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white p-5 flex justify-between items-start">
           <div>
-            <h2 className="text-xl font-bold">⚠️ Review before submitting</h2>
+            <h2 className="text-xl font-bold inline-flex items-center gap-2"><Icon.Alert size={20} /> Review before submitting</h2>
             <p className="text-sm text-amber-50 mt-1">
               <strong>Important:</strong> Once you submit, your responses are LOCKED. You cannot edit them.
             </p>
           </div>
-          <button onClick={onClose} className="text-white/80 hover:text-white text-xl">✕</button>
+          <button onClick={onClose} className="text-white/80 hover:text-white"><Icon.X size={20} /></button>
         </div>
 
         {/* Body */}
@@ -81,11 +88,11 @@ export function SubmitPreviewModal({
               <div className="text-xs text-gray-500 uppercase tracking-wide mt-1">Items Rated</div>
             </div>
             <div className={`rounded-lg p-3 text-center border ${signed ? "bg-emerald-50 border-emerald-200" : "bg-red-50 border-red-200"}`}>
-              <div className={`text-2xl font-bold ${signed ? "text-emerald-700" : "text-red-700"}`}>{signed ? "✓" : "✗"}</div>
+              <div className={`text-2xl font-bold flex justify-center ${signed ? "text-emerald-700" : "text-red-700"}`}>{signed ? <Icon.Check size={24} /> : <Icon.X size={24} />}</div>
               <div className="text-xs text-gray-500 uppercase tracking-wide mt-1">Signed</div>
             </div>
             <div className={`rounded-lg p-3 text-center border ${missing.length === 0 ? "bg-emerald-50 border-emerald-200" : "bg-amber-50 border-amber-200"}`}>
-              <div className={`text-2xl font-bold ${missing.length === 0 ? "text-emerald-700" : "text-amber-700"}`}>{missing.length === 0 ? "✓" : missing.length}</div>
+              <div className={`text-2xl font-bold flex justify-center ${missing.length === 0 ? "text-emerald-700" : "text-amber-700"}`}>{missing.length === 0 ? <Icon.Check size={24} /> : missing.length}</div>
               <div className="text-xs text-gray-500 uppercase tracking-wide mt-1">{missing.length === 0 ? "Complete" : "Missing"}</div>
             </div>
           </div>
@@ -93,7 +100,7 @@ export function SubmitPreviewModal({
           {/* Missing warnings */}
           {missing.length > 0 && (
             <div className="border border-amber-300 bg-amber-50 rounded-lg p-3">
-              <div className="font-semibold text-amber-800 text-sm mb-1">⚠ Missing items:</div>
+              <div className="font-semibold text-amber-800 text-sm mb-1 inline-flex items-center gap-1"><Icon.Alert size={14} className="text-amber-600" /> Missing items:</div>
               <ul className="text-xs text-amber-700 list-disc ml-5 space-y-0.5 max-h-32 overflow-y-auto">
                 {missing.slice(0, 8).map((m, i) => <li key={i}>{m}</li>)}
                 {missing.length > 8 && <li>+ {missing.length - 8} more...</li>}
@@ -103,7 +110,9 @@ export function SubmitPreviewModal({
 
           {/* Section-by-section preview */}
           <div className="space-y-3">
-            {sections.map((s) => {
+            {sections
+              .filter((s) => s.kind !== "RECOMMENDATION")
+              .map((s) => {
               const ratingsInSection = s.questions.filter((q) => q.inputType === "rating" && form[q.id]?.rating);
               const avgRating = ratingsInSection.length
                 ? (ratingsInSection.reduce((sum, q) => sum + parseFloat(form[q.id].rating), 0) / ratingsInSection.length).toFixed(2)
@@ -156,7 +165,8 @@ export function SubmitPreviewModal({
             })}
           </div>
 
-          {recommendation && (
+          {/* Public Recommendation no longer shown — Private Manager Recommendation replaces it */}
+          {false && recommendation && role !== "EMPLOYEE" && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <div className="text-xs text-blue-700 uppercase tracking-wide font-semibold">Recommendation</div>
               <div className="text-base font-bold text-blue-900 mt-1">{recommendation}</div>
@@ -166,7 +176,7 @@ export function SubmitPreviewModal({
           {/* Big warning callout */}
           <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4">
             <div className="flex gap-3">
-              <div className="text-3xl flex-shrink-0">🔒</div>
+              <div className="flex-shrink-0"><Icon.Lock size={32} /></div>
               <div>
                 <div className="font-bold text-red-800 text-base">Are you sure? Everything is final.</div>
                 <p className="text-sm text-red-700 mt-1">
@@ -203,7 +213,7 @@ export function SubmitPreviewModal({
               !confirmCheck ? "Tick the confirmation checkbox" : ""
             }
           >
-            {submitting ? "Submitting…" : `🔒 Confirm & ${submitAction}`}
+            {submitting ? "Submitting…" : <span className="inline-flex items-center gap-1"><Icon.Lock size={14} /> Confirm & {submitAction}</span>}
           </button>
         </div>
       </div>

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Icon } from "./Icons";
 
 type Q = { prompt: string; description?: string | null; inputType: string; options?: string | null; required: boolean; weight: number; sortOrder: number };
 type S = { title: string; kind: string; weight: number; sortOrder: number; questions: Q[] };
@@ -50,7 +51,7 @@ export function TemplateEditor({ template, usedByAssignments }: { template: any;
     });
     if (res.ok) {
       const data = await res.json();
-      setSaving(data.partial ? "⚠ " + data.message : "Saved ✓");
+      setSaving(data.partial ? "Warning: " + data.message : "Saved");
       router.refresh();
     } else setSaving("Error: " + (await res.text()));
     setTimeout(() => setSaving(""), 4000);
@@ -86,9 +87,9 @@ export function TemplateEditor({ template, usedByAssignments }: { template: any;
           Active (available to assign)
         </label>
         {locked && (
-          <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
-            ⚠ This template is used by <b>{usedByAssignments} assignment(s)</b>. To preserve historical data, only the name and active status can be changed.
-            For structural changes, create a new template.
+          <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800 inline-flex items-start gap-1">
+            <Icon.Alert size={12} className="text-amber-600 mt-0.5 flex-shrink-0" /> <span>This template is used by <b>{usedByAssignments} assignment(s)</b>. To preserve historical data, only the name and active status can be changed.
+            For structural changes, create a new template.</span>
           </div>
         )}
       </div>
@@ -106,7 +107,7 @@ export function TemplateEditor({ template, usedByAssignments }: { template: any;
               </select>
               <input className="input" disabled={locked} type="number" value={s.weight} onChange={(e) => updateSection(si, { weight: parseFloat(e.target.value) || 0 })} placeholder="Weight %" />
             </div>
-            {!locked && <button className="btn btn-danger ml-3 text-xs" onClick={() => removeSection(si)}>✕</button>}
+            {!locked && <button className="btn btn-danger ml-3 text-xs" onClick={() => removeSection(si)}><Icon.X size={12} /></button>}
           </div>
           <div className="space-y-2 ml-2">
             {s.questions.map((q, qi) => (
@@ -121,7 +122,7 @@ export function TemplateEditor({ template, usedByAssignments }: { template: any;
                     <option value="text">Text</option>
                     <option value="select">Select</option>
                   </select>
-                  {!locked && <button className="btn btn-danger text-xs" onClick={() => removeQuestion(si, qi)}>✕</button>}
+                  {!locked && <button className="btn btn-danger text-xs" onClick={() => removeQuestion(si, qi)}><Icon.X size={12} /></button>}
                 </div>
               </div>
             ))}

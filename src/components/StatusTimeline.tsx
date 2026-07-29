@@ -1,3 +1,5 @@
+import { Icon } from "./Icons";
+
 type Step = {
   state: string;
   label: string;
@@ -46,7 +48,7 @@ export function StatusTimeline({
 
   return (
     <div className="card">
-      <h3 className="section-header">📊 Workflow Status</h3>
+      <h3 className="section-header inline-flex items-center gap-1"><Icon.BarChart size={16} /> Workflow Status</h3>
       <div className="relative">
         {/* Connector line */}
         <div className="absolute top-5 left-5 right-5 h-0.5 bg-gray-200" />
@@ -63,7 +65,7 @@ export function StatusTimeline({
             return (
               <div key={s.state} className="flex flex-col items-center text-center">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${dotColor} relative z-10`}>
-                  {s.done ? "✓" : i + 1}
+                  {s.done ? <Icon.Check size={18} /> : i + 1}
                 </div>
                 <div className={`mt-2 text-xs font-semibold ${lblColor}`}>{s.label}</div>
                 {s.by && <div className="text-[10px] text-gray-500 mt-0.5 truncate max-w-full">{s.by}</div>}

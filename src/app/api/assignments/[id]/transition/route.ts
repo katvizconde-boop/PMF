@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { getSessionUser, canAccessAssignment } from "@/lib/rbac";
+import { getSessionUser, canAccessAssignment, isManagerOf } from "@/lib/rbac";
 import { audit } from "@/lib/auth";
 import { notifyTransition } from "@/lib/email";
 import { notify, notifyMany } from "@/lib/notifications";
@@ -46,21 +46,25 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   const a = await canAccessAssignment(u.id, u.role, params.id);
   if (!a) return new NextResponse("Forbidden", { status: 403 });
 
-  const { action } = await req.json();
+  const body = await req.json();
+  const { action, target } = body;
   const now = new Date();
 
   const fail = (msg: string) => new NextResponse(msg, { status: 409 });
 
   switch (action) {
     case "submit-self": {
-      if (u.role !== "EMPLOYEE" || a.employeeId !== u.id) return fail("Not allowed");
+      // The employee on the assignment submits their self-assessment.
+      // A MANAGER or HR_ADMIN evaluating themselves can also submit-self on their own PMF.
+      if (a.employeeId !== u.id) return fail("Not allowed");
       if (a.state !== "SELF_ASSESS") return fail("Wrong state");
       if (!a.employeeSignature) return fail("Please sign before submitting.");
       await db.assignment.update({ where: { id: a.id }, data: { state: "MANAGER_REVIEW", selfSubmittedAt: now } });
       break;
     }
     case "submit-manager": {
-      if (u.role !== "MANAGER" || a.managerId !== u.id) return fail("Not allowed");
+      // Allow primary manager OR co-manager to submit
+      if (u.role !== "MANAGER" || !(await isManagerOf(u.id, a.employeeId))) return fail("Not allowed");
       if (a.state !== "MANAGER_REVIEW") return fail("Wrong state");
       if (!a.managerSignature) return fail("Please sign before submitting.");
       const score = await computeScore(a.id);
@@ -76,7 +80,15 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     }
     case "reopen": {
       if (u.role !== "HR_ADMIN") return fail("Not allowed");
-      await db.assignment.update({ where: { id: a.id }, data: { state: "MANAGER_REVIEW", finalizedAt: null, hrApprovedAt: null } });
+      // Default: reopen back to MANAGER_REVIEW. Pass { target: "SELF_ASSESS" }
+      // to send it all the way back to the employee for self-assessment edits.
+      const to = target === "SELF_ASSESS" ? "SELF_ASSESS" : "MANAGER_REVIEW";
+      const data: any = { state: to, finalizedAt: null, hrApprovedAt: null };
+      if (to === "SELF_ASSESS") {
+        data.managerSubmittedAt = null;
+        data.selfSubmittedAt = null;
+      }
+      await db.assignment.update({ where: { id: a.id }, data });
       break;
     }
     default:

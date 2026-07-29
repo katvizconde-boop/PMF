@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Bar, Line, Doughnut } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -13,6 +14,8 @@ import { AnniversariesWidget, DueThisWeekWidget } from "./DashboardWidgets";
 import { FlightRiskWidget, ProbationAlertsWidget } from "./InsightWidgets";
 import { PageHeader, FilterField } from "./PageHeader";
 import { COMPANIES, companyChipClass } from "@/lib/companies";
+import { Icon } from "./Icons";
+import { barHoverOptions, lineHoverOptions, doughnutHoverOptions } from "@/lib/chartOptions";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Tooltip, Legend, Filler);
 
@@ -38,8 +41,18 @@ export function HRDashboard({
     hireDate: string | Date; daysRemaining: number; hasFinalizedProbEval: boolean }[];
 }) {
   const [tab, setTab] = useState<"overview" | "pending" | "completed" | "all">("overview");
-  const [companyFilter, setCompanyFilter] = useState<string>("ALL");
+  const router = useRouter();
+  const sp = useSearchParams();
+  const companyFilter = sp.get("company") || "ALL";
 
+  function setCompanyFilter(v: string) {
+    const next = new URLSearchParams(sp.toString());
+    if (v === "ALL") next.delete("company");
+    else next.set("company", v);
+    router.push(`/dashboard?${next.toString()}`);
+  }
+
+  // Server-side already filters by company. Keep the local filter for safety.
   const filteredAssignments = companyFilter === "ALL"
     ? assignments
     : assignments.filter((a: any) => a.employee?.company === companyFilter);
@@ -60,33 +73,37 @@ export function HRDashboard({
       <PageHeader title="Dashboard" subtitle="Performance Management overview across all companies and cycles">
         <FilterField label="Company">
           <select className="input w-44" value={companyFilter} onChange={(e) => setCompanyFilter(e.target.value)}>
-            <option value="ALL">🏢 All Companies</option>
+            <option value="ALL">All Companies</option>
             {COMPANIES.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </FilterField>
       </PageHeader>
 
       {pending && <PendingBanner action="review & finalize these evaluations" items={pending} />}
-      {(anniversaries.length > 0 || dueSoon.length > 0) && (
+
+      {/* Due This Week ⟷ Flight Risk side-by-side */}
+      {(dueSoon.length > 0 || flightRisks.length > 0) && (
         <div className="grid md:grid-cols-2 gap-4">
           {dueSoon.length > 0 && <DueThisWeekWidget items={dueSoon.map((d) => ({ ...d, due: new Date(d.due) }))} />}
-          {anniversaries.length > 0 && <AnniversariesWidget people={anniversaries.map((a) => ({ ...a, date: new Date(a.date) }))} />}
+          {flightRisks.length > 0 && <FlightRiskWidget risks={flightRisks} />}
         </div>
       )}
-      {(flightRisks.length > 0 || probationAlerts.length > 0) && (
+
+      {/* Anniversaries ⟷ Probation alerts */}
+      {(anniversaries.length > 0 || probationAlerts.length > 0) && (
         <div className="grid md:grid-cols-2 gap-4">
-          <FlightRiskWidget risks={flightRisks} />
-          <ProbationAlertsWidget alerts={probationAlerts} />
+          {anniversaries.length > 0 && <AnniversariesWidget people={anniversaries.map((a) => ({ ...a, date: new Date(a.date) }))} />}
+          {probationAlerts.length > 0 && <ProbationAlertsWidget alerts={probationAlerts} />}
         </div>
       )}
 
       {/* KPI Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <KpiCard icon="👥" iconBg="bg-blue-50 text-blue-600" label="Total Users" value={totalEmployees} sub="across all companies" />
-        <KpiCard icon="📋" iconBg="bg-purple-50 text-purple-600" label="Evaluations" value={totalEvaluations} sub={`${completionPct}% complete`} />
-        <KpiCard icon="✅" iconBg="bg-emerald-50 text-emerald-600" label="Finalized" value={completedEvaluations} sub="locked & visible" />
+        <KpiCard icon={<Icon.Users size={20} />} iconBg="bg-blue-50 text-blue-600" label="Total Users" value={totalEmployees} sub="across all companies" />
+        <KpiCard icon={<Icon.Clipboard size={20} />} iconBg="bg-purple-50 text-purple-600" label="Evaluations" value={totalEvaluations} sub={`${completionPct}% complete`} />
+        <KpiCard icon={<Icon.CheckCircle size={20} />} iconBg="bg-emerald-50 text-emerald-600" label="Finalized" value={completedEvaluations} sub="locked & visible" />
         <KpiCard
-          icon="⭐" iconBg="bg-amber-50 text-amber-600"
+          icon={<Icon.Star size={20} />} iconBg="bg-amber-50 text-amber-600"
           label="Team Average"
           value={teamAverage != null ? teamAverage.toFixed(2) : "N/A"}
           sub="weighted score"
@@ -113,9 +130,31 @@ export function HRDashboard({
                 <Bar
                   data={{
                     labels: Object.keys(distribution),
-                    datasets: [{ label: "Evaluations", data: Object.values(distribution), backgroundColor: "#3b82f6", borderRadius: 6, barThickness: 32 }],
+                    datasets: [{
+                      label: "Evaluations",
+                      data: Object.values(distribution),
+                      backgroundColor: "#3b82f6",
+                      hoverBackgroundColor: "#1d4ed8",
+                      borderRadius: 6,
+                      barThickness: 32,
+                    }],
                   }}
-                  options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }}
+                  options={{
+                    ...barHoverOptions,
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                      ...(barHoverOptions.plugins ?? {}),
+                      legend: { display: false },
+                      tooltip: {
+                        ...(barHoverOptions.plugins?.tooltip ?? {}),
+                        callbacks: {
+                          title: (items: any) => `Score band: ${items[0].label}`,
+                          label: (ctx: any) => `  ${ctx.parsed.y} evaluation${ctx.parsed.y === 1 ? "" : "s"}`,
+                        },
+                      },
+                    },
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+                  } as any}
                 />
               </div>
             </div>
@@ -133,10 +172,28 @@ export function HRDashboard({
                         filteredAssignments.filter((a: any) => a.state === "SELF_ASSESS").length,
                       ],
                       backgroundColor: ["#10b981", "#3b82f6", "#f59e0b"],
+                      hoverBackgroundColor: ["#059669", "#1d4ed8", "#d97706"],
                       borderWidth: 0,
                     }],
                   }}
-                  options={{ responsive: true, maintainAspectRatio: false, cutout: "65%", plugins: { legend: { position: "bottom", labels: { padding: 12, font: { size: 11 } } } } }}
+                  options={{
+                    ...doughnutHoverOptions,
+                    responsive: true, maintainAspectRatio: false, cutout: "65%",
+                    plugins: {
+                      ...(doughnutHoverOptions.plugins ?? {}),
+                      legend: { position: "bottom", labels: { padding: 12, font: { size: 11 } } },
+                      tooltip: {
+                        ...(doughnutHoverOptions.plugins?.tooltip ?? {}),
+                        callbacks: {
+                          label: (ctx: any) => {
+                            const total = ctx.dataset.data.reduce((a: number, b: number) => a + b, 0);
+                            const pct = total ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+                            return `  ${ctx.label}: ${ctx.parsed} (${pct}%)`;
+                          },
+                        },
+                      },
+                    },
+                  } as any}
                 />
               </div>
               <div className="text-center mt-3">
@@ -162,10 +219,26 @@ export function HRDashboard({
                         borderColor: "#3b82f6",
                         backgroundColor: "rgba(59,130,246,0.1)",
                         borderWidth: 3, pointRadius: 5, pointBackgroundColor: "#3b82f6",
+                        pointHoverRadius: 9, pointHoverBackgroundColor: "#fff", pointHoverBorderColor: "#1d4ed8", pointHoverBorderWidth: 3,
                         fill: true, tension: 0.35,
                       }],
                     }}
-                    options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 5 } } }}
+                    options={{
+                      ...lineHoverOptions,
+                      responsive: true, maintainAspectRatio: false,
+                      plugins: {
+                        ...(lineHoverOptions.plugins ?? {}),
+                        legend: { display: false },
+                        tooltip: {
+                          ...(lineHoverOptions.plugins?.tooltip ?? {}),
+                          callbacks: {
+                            title: (items: any) => items[0].label,
+                            label: (ctx: any) => `  Avg score: ${ctx.parsed.y.toFixed(2)} / 5`,
+                          },
+                        },
+                      },
+                      scales: { y: { min: 0, max: 5 } },
+                    } as any}
                   />
                 )}
               </div>
@@ -217,7 +290,7 @@ export function HRDashboard({
   );
 }
 
-function KpiCard({ icon, iconBg, label, value, sub }: { icon: string; iconBg: string; label: string; value: any; sub?: string }) {
+function KpiCard({ icon, iconBg, label, value, sub }: { icon: React.ReactNode; iconBg: string; label: string; value: any; sub?: string }) {
   return (
     <div className="kpi-card">
       <div className="flex items-start gap-3">

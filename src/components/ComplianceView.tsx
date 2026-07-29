@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { Icon } from "./Icons";
 
 type Row = {
   id: string; name: string; email: string; position: string | null; role: string;
@@ -47,7 +48,7 @@ export function ComplianceView({ rows }: { rows: Row[] }) {
     <div>
       <div className="flex items-start justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h2 className="page-title">📜 Compliance Reports</h2>
+          <h2 className="page-title inline-flex items-center gap-2"><Icon.Doc size={24} /> Compliance Reports</h2>
           <p className="page-subtitle">DOLE-friendly reports — tenure, probation tracking, training, PIPs.</p>
         </div>
         <div className="flex items-center gap-2">
@@ -55,25 +56,25 @@ export function ComplianceView({ rows }: { rows: Row[] }) {
             <option value="ALL">All companies ({rows.length})</option>
             {companies.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
-          <button className="btn btn-primary" onClick={exportCsv}>⬇ Export CSV</button>
+          <button className="btn btn-primary" onClick={exportCsv}><span className="inline-flex items-center gap-1"><Icon.Download size={14} /> Export CSV</span></button>
         </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-        <Stat label="Total Headcount"  value={total}        icon="👥" color="bg-blue-50 text-blue-700" />
-        <Stat label="Regular"          value={regular}      icon="✅" color="bg-emerald-50 text-emerald-700" />
-        <Stat label="Probationary"     value={probationary} icon="⏳" color="bg-amber-50 text-amber-700" />
-        <Stat label="Active PIPs"      value={activePIPs}   icon="🚨" color="bg-red-50 text-red-700" />
-        <Stat label="5+ Year Veterans" value={veterans}     icon="🎖️" color="bg-purple-50 text-purple-700" />
-        <Stat label="New Hires (90d)"  value={newHires}     icon="🌱" color="bg-indigo-50 text-indigo-700" />
+        <Stat label="Total Headcount"  value={total}        icon={<Icon.Users size={18} />} color="bg-blue-50 text-blue-700" />
+        <Stat label="Regular"          value={regular}      icon={<Icon.CheckCircle size={18} />} color="bg-emerald-50 text-emerald-700" />
+        <Stat label="Probationary"     value={probationary} icon={<Icon.Calendar size={18} />} color="bg-amber-50 text-amber-700" />
+        <Stat label="Active PIPs"      value={activePIPs}   icon={<Icon.Alert size={18} className="text-amber-600" />} color="bg-red-50 text-red-700" />
+        <Stat label="5+ Year Veterans" value={veterans}     icon={<Icon.Trophy size={18} />} color="bg-purple-50 text-purple-700" />
+        <Stat label="New Hires (90d)"  value={newHires}     icon={<Icon.Sprout size={18} />} color="bg-indigo-50 text-indigo-700" />
       </div>
 
       <div className="tabs-bar mb-4">
-        <button className={`tab ${tab === "summary" ? "active" : ""}`} onClick={() => setTab("summary")}>📋 Summary</button>
-        <button className={`tab ${tab === "tenure" ? "active" : ""}`} onClick={() => setTab("tenure")}>📆 Tenure</button>
-        <button className={`tab ${tab === "probation" ? "active" : ""}`} onClick={() => setTab("probation")}>⏳ Probationary</button>
-        <button className={`tab ${tab === "pips" ? "active" : ""}`} onClick={() => setTab("pips")}>🚨 PIPs</button>
-        <button className={`tab ${tab === "training" ? "active" : ""}`} onClick={() => setTab("training")}>🎓 Training</button>
+        <button className={`tab ${tab === "summary" ? "active" : ""}`} onClick={() => setTab("summary")}><span className="inline-flex items-center gap-1"><Icon.Clipboard size={14} /> Summary</span></button>
+        <button className={`tab ${tab === "tenure" ? "active" : ""}`} onClick={() => setTab("tenure")}><span className="inline-flex items-center gap-1"><Icon.Calendar size={14} /> Tenure</span></button>
+        <button className={`tab ${tab === "probation" ? "active" : ""}`} onClick={() => setTab("probation")}><span className="inline-flex items-center gap-1"><Icon.Calendar size={14} /> Probationary</span></button>
+        <button className={`tab ${tab === "pips" ? "active" : ""}`} onClick={() => setTab("pips")}><span className="inline-flex items-center gap-1"><Icon.Alert size={14} className="text-amber-600" /> PIPs</span></button>
+        <button className={`tab ${tab === "training" ? "active" : ""}`} onClick={() => setTab("training")}><span className="inline-flex items-center gap-1"><Icon.GraduationCap size={14} /> Training</span></button>
       </div>
 
       <div className="card overflow-x-auto">
@@ -149,7 +150,7 @@ export function ComplianceView({ rows }: { rows: Row[] }) {
                     </td>
                     <td className="py-2 px-2 text-center">
                       {r.employmentType === "PROBATIONARY"
-                        ? (r.probEvalsFinalized > 0 ? <span className="text-emerald-600">✓</span> : <span className="text-red-600">✗</span>)
+                        ? (r.probEvalsFinalized > 0 ? <Icon.Check size={16} className="text-emerald-600 inline-block" /> : <Icon.X size={16} className="text-red-600 inline-block" />)
                         : <span className="text-gray-300">—</span>}
                     </td>
                   </>)}
@@ -172,14 +173,14 @@ export function ComplianceView({ rows }: { rows: Row[] }) {
         </table>
       </div>
 
-      <div className="text-xs text-gray-500 mt-3">
-        💡 Tip: Click <b>Export CSV</b> to download the current view for filing or DOLE submission.
+      <div className="text-xs text-gray-500 mt-3 inline-flex items-center gap-1">
+        <Icon.Sparkle size={12} /> Tip: Click <b>Export CSV</b> to download the current view for filing or DOLE submission.
       </div>
     </div>
   );
 }
 
-function Stat({ label, value, icon, color }: { label: string; value: any; icon: string; color: string }) {
+function Stat({ label, value, icon, color }: { label: string; value: any; icon: React.ReactNode; color: string }) {
   return (
     <div className="kpi-card">
       <div className="flex items-start gap-3">

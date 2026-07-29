@@ -1,14 +1,16 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { Icon } from "./Icons";
 
 const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
 const ACCEPTED = ["image/jpeg", "image/jpg", "image/png"];
 
 export function SignaturePad({
-  onSave, existing, label = "Signature", required = true,
+  onSave, existing, label = "Signature", required = true, existingName,
 }: {
-  onSave: (dataUrl: string | null) => void;
+  onSave: (payload: { dataUrl: string | null; name: string | null }) => void;
   existing?: string | null;
+  existingName?: string | null;
   label?: string;
   required?: boolean;
 }) {
@@ -19,6 +21,8 @@ export function SignaturePad({
   const [empty, setEmpty] = useState(!existing);
   const [pendingSave, setPendingSave] = useState(false);
   const [uploadErr, setUploadErr] = useState<string | null>(null);
+  const [typedName, setTypedName] = useState<string>(existingName ?? "");
+  const [nameErr, setNameErr] = useState<string | null>(null);
 
   useEffect(() => {
     const c = canvasRef.current; if (!c) return;
@@ -67,16 +71,31 @@ export function SignaturePad({
   function end() {
     if (!drawing) return;
     setDrawing(false);
-    // Don't auto-save on every mouse-up — wait for explicit Confirm click.
-    // Track local "dirty" state so Confirm button can be enabled.
     setPendingSave(true);
   }
 
+  function requireTypedName(): string | null {
+    const n = typedName.trim();
+    if (n.length < 2) {
+      setNameErr("Please type your full name before confirming.");
+      return null;
+    }
+    if (n.length > 120) {
+      setNameErr("Name is too long (max 120 characters).");
+      return null;
+    }
+    setNameErr(null);
+    return n;
+  }
+
   function confirmDraw() {
+    const name = requireTypedName();
+    if (!name) return;
     if (!canvasRef.current) return;
-    onSave(canvasRef.current.toDataURL("image/png"));
+    onSave({ dataUrl: canvasRef.current.toDataURL("image/png"), name });
     setPendingSave(false);
   }
+
   function clear() {
     setPendingSave(false);
     const c = canvasRef.current; const ctx = c?.getContext("2d");
@@ -87,12 +106,15 @@ export function SignaturePad({
     }
     setEmpty(true);
     setUploadErr(null);
+    setNameErr(null);
     if (fileRef.current) fileRef.current.value = "";
-    onSave(null);
+    onSave({ dataUrl: null, name: null });
   }
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     setUploadErr(null);
+    const name = requireTypedName();
+    if (!name) return;
     const file = e.target.files?.[0];
     if (!file) return;
     if (!ACCEPTED.includes(file.type) && !/\.(jpe?g|png)$/i.test(file.name)) {
@@ -103,11 +125,10 @@ export function SignaturePad({
       setUploadErr(`File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Max is 10 MB.`);
       return;
     }
-    // Read as data URL
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = String(reader.result);
-      onSave(dataUrl);
+      onSave({ dataUrl, name });
       setEmpty(false);
     };
     reader.onerror = () => setUploadErr("Could not read the file.");
@@ -121,6 +142,25 @@ export function SignaturePad({
         <button type="button" onClick={clear} className="text-xs text-gray-500 hover:text-red-600">Clear</button>
       </div>
 
+      {/* Typed-name input — required BEFORE the signature is accepted */}
+      <div className="mb-3">
+        <label className="text-xs text-gray-600 font-medium">Type your full name<span className="text-red-500">*</span></label>
+        <input
+          type="text"
+          className="input text-sm mt-1"
+          placeholder="e.g. Juan Dela Cruz"
+          value={typedName}
+          onChange={(e) => { setTypedName(e.target.value); if (nameErr) setNameErr(null); }}
+          maxLength={120}
+          autoComplete="off"
+        />
+        {nameErr && (
+          <p className="text-xs text-red-700 mt-1 inline-flex items-center gap-1">
+            <Icon.Alert size={12} className="text-red-600" /> {nameErr}
+          </p>
+        )}
+      </div>
+
       {/* Mode toggle */}
       <div className="flex gap-1 mb-2 p-1 bg-gray-100 rounded-md">
         <button
@@ -130,7 +170,7 @@ export function SignaturePad({
             mode === "draw" ? "bg-white text-primary-700 shadow-sm" : "text-gray-600 hover:text-gray-900"
           }`}
         >
-          ✍️ Draw
+          <span className="inline-flex items-center gap-1 justify-center"><Icon.Pen size={12} /> Draw</span>
         </button>
         <button
           type="button"
@@ -139,7 +179,7 @@ export function SignaturePad({
             mode === "upload" ? "bg-white text-primary-700 shadow-sm" : "text-gray-600 hover:text-gray-900"
           }`}
         >
-          ⬆ Upload Image
+          <span className="inline-flex items-center gap-1 justify-center"><Icon.Upload size={12} /> Upload Image</span>
         </button>
       </div>
 
@@ -163,7 +203,7 @@ export function SignaturePad({
                 onClick={confirmDraw}
                 className="btn btn-primary text-xs py-1.5 px-3 flex-shrink-0"
               >
-                ✓ Confirm signature
+                <span className="inline-flex items-center gap-1"><Icon.Check size={12} /> Confirm signature</span>
               </button>
             </div>
           )}
@@ -178,13 +218,13 @@ export function SignaturePad({
             className="block w-full text-xs text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-primary-50 file:text-primary-700 file:font-semibold file:cursor-pointer hover:file:bg-primary-100"
           />
           <div className="text-[11px] text-gray-500 mt-2 space-y-0.5">
-            <div>📁 <strong>Accepted formats:</strong> JPEG, JPG, PNG only</div>
-            <div>📏 <strong>Maximum size:</strong> 10 MB</div>
-            <div>💡 Tip: take a photo of your handwritten signature on white paper, or use a stored signature image.</div>
+            <div className="inline-flex items-center gap-1"><Icon.Folder size={12} /> <strong>Accepted formats:</strong> JPEG, JPG, PNG only</div>
+            <div className="inline-flex items-center gap-1"><Icon.Info size={12} /> <strong>Maximum size:</strong> 10 MB</div>
+            <div className="inline-flex items-center gap-1"><Icon.Sparkle size={12} /> Type your name above first, then upload your signature image.</div>
           </div>
           {uploadErr && (
             <div className="mt-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded p-2">
-              ⚠ {uploadErr}
+              <span className="inline-flex items-center gap-1"><Icon.Alert size={12} className="text-amber-600" /> {uploadErr}</span>
             </div>
           )}
         </div>

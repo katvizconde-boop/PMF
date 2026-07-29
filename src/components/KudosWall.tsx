@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Icon } from "./Icons";
 
 type User = { id: string; firstName: string; lastName: string; position: string | null; department?: string | null; company?: string | null; profilePicture?: string | null };
 type Kudo = {
@@ -9,12 +10,12 @@ type Kudo = {
 };
 
 const CATEGORIES = [
-  { v: "Collaboration",   color: "bg-blue-100 text-blue-700",       icon: "🤝" },
-  { v: "Excellence",      color: "bg-emerald-100 text-emerald-700", icon: "⭐" },
-  { v: "Innovation",      color: "bg-purple-100 text-purple-700",   icon: "💡" },
-  { v: "Integrity",       color: "bg-amber-100 text-amber-700",     icon: "🛡️" },
-  { v: "Learning",        color: "bg-indigo-100 text-indigo-700",   icon: "📚" },
-  { v: "Customer-First",  color: "bg-pink-100 text-pink-700",       icon: "💖" },
+  { v: "Collaboration",   color: "bg-blue-100 text-blue-700",       Icon: Icon.Users },
+  { v: "Excellence",      color: "bg-emerald-100 text-emerald-700", Icon: Icon.Star },
+  { v: "Innovation",      color: "bg-purple-100 text-purple-700",   Icon: Icon.Sparkle },
+  { v: "Integrity",       color: "bg-amber-100 text-amber-700",     Icon: Icon.CheckCircle },
+  { v: "Learning",        color: "bg-indigo-100 text-indigo-700",   Icon: Icon.GraduationCap },
+  { v: "Customer-First",  color: "bg-pink-100 text-pink-700",       Icon: Icon.Trophy },
 ];
 
 function timeAgo(iso: string) {
@@ -59,21 +60,21 @@ export function KudosWall({ currentUserId, users }: { currentUserId: string; use
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
-          <h2 className="page-title">🎉 Kudos</h2>
+          <h2 className="page-title inline-flex items-center gap-2"><Icon.Trophy size={24} /> Kudos</h2>
           <p className="page-subtitle">Recognize great work — anytime, anywhere.</p>
         </div>
         <button className="btn btn-primary" onClick={() => setShowForm(true)}>+ Send Kudos</button>
       </div>
 
       <div className="tabs-bar mb-6">
-        <button className={`tab ${tab === "public" ? "active" : ""}`} onClick={() => setTab("public")}>🌍 Public Wall</button>
-        <button className={`tab ${tab === "mine-received" ? "active" : ""}`} onClick={() => setTab("mine-received")}>📥 Received by Me</button>
-        <button className={`tab ${tab === "mine-sent" ? "active" : ""}`} onClick={() => setTab("mine-sent")}>📤 Sent by Me</button>
+        <button className={`tab ${tab === "public" ? "active" : ""}`} onClick={() => setTab("public")}><span className="inline-flex items-center gap-1"><Icon.Users size={14} /> Public Wall</span></button>
+        <button className={`tab ${tab === "mine-received" ? "active" : ""}`} onClick={() => setTab("mine-received")}><span className="inline-flex items-center gap-1"><Icon.Download size={14} /> Received by Me</span></button>
+        <button className={`tab ${tab === "mine-sent" ? "active" : ""}`} onClick={() => setTab("mine-sent")}><span className="inline-flex items-center gap-1"><Icon.Send size={14} /> Sent by Me</span></button>
       </div>
 
       {kudos.length === 0 ? (
         <div className="card text-center py-16">
-          <div className="text-5xl mb-3">🌱</div>
+          <div className="flex justify-center mb-3"><Icon.Sprout size={48} className="text-emerald-500" /></div>
           <p className="text-gray-500">No kudos yet. Be the first to recognize someone's great work!</p>
           <button className="btn btn-primary mt-4" onClick={() => setShowForm(true)}>+ Send Kudos</button>
         </div>
@@ -83,7 +84,7 @@ export function KudosWall({ currentUserId, users }: { currentUserId: string; use
             const cat = CATEGORIES.find((c) => c.v === k.category);
             return (
               <div key={k.id} className="card relative">
-                <div className="absolute -top-3 -right-3 text-4xl">🎉</div>
+                <div className="absolute -top-3 -right-3"><Icon.Trophy size={36} className="text-amber-500" /></div>
                 <div className="flex items-center gap-3 mb-3">
                   <Avatar user={k.fromUser} />
                   <div className="text-xs text-gray-500">→</div>
@@ -98,12 +99,12 @@ export function KudosWall({ currentUserId, users }: { currentUserId: string; use
                   </div>
                 </div>
                 {cat && (
-                  <span className={`chip ${cat.color} mb-2 inline-block`}>
-                    {cat.icon} {cat.v}
+                  <span className={`chip ${cat.color} mb-2 inline-flex items-center gap-1`}>
+                    <cat.Icon size={12} /> {cat.v}
                   </span>
                 )}
                 <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{k.message}</p>
-                {!k.isPublic && <p className="text-xs text-gray-400 italic mt-2">🔒 Private — only sender, recipient, and HR can see this</p>}
+                {!k.isPublic && <p className="text-xs text-gray-400 italic mt-2 inline-flex items-center gap-1"><Icon.Lock size={12} /> Private — only sender, recipient, and HR can see this</p>}
               </div>
             );
           })}
@@ -142,8 +143,8 @@ function KudosForm({ users, onClose, onSent }: { users: User[]; currentUserId: s
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-800">🎉 Send Kudos</h2>
-          <button className="text-gray-400 hover:text-gray-700" onClick={onClose}>✕</button>
+          <h2 className="text-xl font-bold text-gray-800 inline-flex items-center gap-2"><Icon.Trophy size={20} /> Send Kudos</h2>
+          <button className="text-gray-400 hover:text-gray-700" onClick={onClose}><Icon.X size={16} /></button>
         </div>
         <form onSubmit={submit} className="space-y-4">
           <div>
@@ -167,7 +168,7 @@ function KudosForm({ users, onClose, onSent }: { users: User[]; currentUserId: s
                     category === c.v ? `${c.color} border-current ring-2 ring-offset-1` : "bg-white border-gray-200 hover:bg-gray-50"
                   }`}
                 >
-                  <div className="text-lg">{c.icon}</div>
+                  <div className="flex justify-center"><c.Icon size={18} /></div>
                   {c.v}
                 </button>
               ))}
@@ -180,11 +181,11 @@ function KudosForm({ users, onClose, onSent }: { users: User[]; currentUserId: s
           </div>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
-            🌍 Post publicly on the kudos wall (recommended)
+            <Icon.Users size={14} /> Post publicly on the kudos wall (recommended)
           </label>
           <div className="flex justify-end gap-2 pt-2">
             <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn btn-primary" disabled={busy || !toUserId || !message.trim()}>{busy ? "Sending…" : "🎉 Send Kudos"}</button>
+            <button type="submit" className="btn btn-primary" disabled={busy || !toUserId || !message.trim()}>{busy ? "Sending…" : <span className="inline-flex items-center gap-1"><Icon.Trophy size={14} /> Send Kudos</span>}</button>
           </div>
         </form>
       </div>

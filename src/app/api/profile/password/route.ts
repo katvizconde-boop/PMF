@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/rbac";
 import { audit } from "@/lib/auth";
+import { hashPassword } from "@/lib/password";
 
 export async function POST(req: Request) {
   const u = await getSessionUser();
@@ -18,8 +19,8 @@ export async function POST(req: Request) {
   const ok = await bcrypt.compare(currentPassword, fresh.passwordHash);
   if (!ok) return new NextResponse("Current password is incorrect", { status: 401 });
 
-  const hash = await bcrypt.hash(newPassword, 10);
-  await db.user.update({ where: { id: u.id }, data: { passwordHash: hash } });
+  const hash = await hashPassword(newPassword);
+  await db.user.update({ where: { id: u.id }, data: { passwordHash: hash, mustChangePassword: false } });
   await audit(u.id, "CHANGE_PASSWORD", "User", u.id);
   return NextResponse.json({ ok: true });
 }

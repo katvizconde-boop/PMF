@@ -1,15 +1,17 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
+import { Icon } from "./Icons";
+import { PrintSectionButton } from "./PrintSectionButton";
 
 type Doc = { id: string; type: string; name: string; mimeType: string; size: number; notes: string | null; createdAt: string; uploadedById: string };
 
 const TYPES = [
-  { v: "CONTRACT",    label: "📄 Contract",    color: "bg-blue-100 text-blue-700" },
-  { v: "CERTIFICATE", label: "🎓 Certificate", color: "bg-emerald-100 text-emerald-700" },
-  { v: "MEMO",        label: "📝 Memo",        color: "bg-amber-100 text-amber-700" },
-  { v: "ID",          label: "🪪 ID",          color: "bg-purple-100 text-purple-700" },
-  { v: "RESUME",      label: "📑 Resume",      color: "bg-indigo-100 text-indigo-700" },
-  { v: "OTHER",       label: "📎 Other",       color: "bg-gray-100 text-gray-700" },
+  { v: "CONTRACT",    label: "Contract",    color: "bg-blue-100 text-blue-700",        Icon: Icon.Doc },
+  { v: "CERTIFICATE", label: "Certificate", color: "bg-emerald-100 text-emerald-700",  Icon: Icon.GraduationCap },
+  { v: "MEMO",        label: "Memo",        color: "bg-amber-100 text-amber-700",      Icon: Icon.Pen },
+  { v: "ID",          label: "ID",          color: "bg-purple-100 text-purple-700",    Icon: Icon.User },
+  { v: "RESUME",      label: "Resume",      color: "bg-indigo-100 text-indigo-700",    Icon: Icon.Doc },
+  { v: "OTHER",       label: "Other",       color: "bg-gray-100 text-gray-700",        Icon: Icon.Folder },
 ];
 
 function fmtBytes(n: number) {
@@ -59,9 +61,12 @@ export function DocumentsSection({ employeeId, currentUserCanEdit }: { employeeI
   const filtered = filter === "ALL" ? docs : docs.filter((d) => d.type === filter);
 
   return (
-    <div className="card">
+    <div className="card printable-documents">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-        <h3 className="section-header mb-0">📎 Documents</h3>
+        <h3 className="section-header mb-0 inline-flex items-center gap-1"><Icon.Folder size={16} /> Documents</h3>
+        <div className="inline-flex items-center gap-2">
+          <PrintSectionButton sectionId="documents" label="documents" />
+        </div>
         <select className="input text-sm w-auto" value={filter} onChange={(e) => setFilter(e.target.value)}>
           <option value="ALL">All ({docs.length})</option>
           {TYPES.map((t) => {
@@ -82,7 +87,7 @@ export function DocumentsSection({ employeeId, currentUserCanEdit }: { employeeI
           <input className="input text-sm mb-2" placeholder="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} />
           <div className="flex justify-between items-center">
             <span className="text-xs text-gray-500">Max 5MB. PDFs, images, Office docs.</span>
-            <button type="submit" className="btn btn-primary text-xs" disabled={uploading}>{uploading ? "Uploading…" : "⬆ Upload"}</button>
+            <button type="submit" className="btn btn-primary text-xs" disabled={uploading}>{uploading ? "Uploading…" : <span className="inline-flex items-center gap-1"><Icon.Upload size={12} /> Upload</span>}</button>
           </div>
         </form>
       )}
@@ -95,7 +100,7 @@ export function DocumentsSection({ employeeId, currentUserCanEdit }: { employeeI
             const t = TYPES.find((x) => x.v === d.type) ?? TYPES[5];
             return (
               <div key={d.id} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition border border-transparent hover:border-gray-200">
-                <span className={`chip ${t.color} flex-shrink-0`}>{t.label.split(" ")[0]}</span>
+                <span className={`chip ${t.color} flex-shrink-0 inline-flex items-center gap-1`}><t.Icon size={12} /> {t.label}</span>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-gray-800 truncate">{d.name}</div>
                   <div className="text-xs text-gray-500 flex items-center gap-2">
@@ -105,9 +110,9 @@ export function DocumentsSection({ employeeId, currentUserCanEdit }: { employeeI
                     {d.notes && (<><span>·</span><span className="italic truncate max-w-[200px]">{d.notes}</span></>)}
                   </div>
                 </div>
-                <a href={`/api/documents/${d.id}`} className="btn btn-secondary text-xs">⬇ Download</a>
+                <a href={`/api/documents/${d.id}`} className="btn btn-secondary text-xs"><span className="inline-flex items-center gap-1"><Icon.Download size={12} /> Download</span></a>
                 {currentUserCanEdit && (
-                  <button onClick={() => remove(d.id)} className="text-xs text-gray-400 hover:text-red-600 px-2">✕</button>
+                  <button onClick={() => remove(d.id)} className="text-xs text-gray-400 hover:text-red-600 px-2"><Icon.X size={12} /></button>
                 )}
               </div>
             );

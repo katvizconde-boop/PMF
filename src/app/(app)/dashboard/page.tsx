@@ -1,11 +1,15 @@
-import { requireUser } from "@/lib/rbac";
+import { requireUser, getManagedEmployeeIds } from "@/lib/rbac";
 import { db } from "@/lib/db";
 import { HRDashboard } from "@/components/HRDashboard";
 import { AssignmentTable } from "@/components/AssignmentTable";
 import { PendingBanner } from "@/components/PendingBanner";
 import { PageHeader } from "@/components/PageHeader";
+import { DashboardGreeting } from "@/components/DashboardGreeting";
 import { AnniversariesWidget, DueThisWeekWidget } from "@/components/DashboardWidgets";
 import { getFlightRisks, getProbationAlerts } from "@/lib/insights";
+import { Icon } from "@/components/Icons";
+import { RemoveTeamMemberButton } from "@/components/RemoveTeamMemberButton";
+import { TeamMembersCard } from "@/components/TeamMembersCard";
 
 function fmt(d: Date) { return d.toLocaleDateString(); }
 function bannerItem(a: any, label: string) {
@@ -56,22 +60,27 @@ function dueItems(assignments: any[]) {
     .slice(0, 6);
 }
 
-export default async function Dashboard({ searchParams }: { searchParams: { error?: string } }) {
+export default async function Dashboard({ searchParams }: { searchParams: { error?: string; company?: string } }) {
   const u = await requireUser();
   const errorMsg =
     searchParams.error === "assignment-deleted"
-      ? "✓ The evaluation was deleted successfully."
+      ? "The evaluation was deleted successfully."
       : searchParams.error === "assignment-not-found"
-      ? "⚠ We couldn't open that PMF. A few common reasons: (1) it may have been deleted by HR, (2) it may be assigned to someone else and you don't have access, (3) the link may be from a previous cycle that was archived, or (4) sample data may have been reset. If you believe this is a mistake, please contact HR."
+      ? "We couldn't open that PMF. A few common reasons: (1) it may have been deleted by HR, (2) it may be assigned to someone else and you don't have access, (3) the link may be from a previous cycle that was archived, or (4) sample data may have been reset. If you believe this is a mistake, please contact HR."
       : null;
 
   if (u.role === "HR_ADMIN") {
+    const companyFilter = searchParams.company && searchParams.company !== "ALL" ? searchParams.company : null;
+    const assignmentWhere = companyFilter ? { employee: { company: companyFilter } } : {};
+    const userCountWhere = companyFilter ? { company: companyFilter } : {};
+
     const [assignments, allUsers] = await Promise.all([
       db.assignment.findMany({
+        where: assignmentWhere,
         include: { employee: true, manager: true, cycle: true, template: true },
         orderBy: { createdAt: "desc" },
       }),
-      db.user.count(),
+      db.user.count({ where: userCountWhere }),
     ]);
     const completed = assignments.filter((a) => a.state === "FINALIZED");
     const scores = completed.map((a) => a.overallScore).filter((s): s is number => s != null);
@@ -122,6 +131,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { erro
 
     return (
       <>
+        <DashboardGreeting firstName={u.name?.split(" ")[0] ?? ""} />
         {errorMsg && <div className="card mb-4 border-amber-300 bg-amber-50 text-amber-800 text-sm">{errorMsg}</div>}
       <HRDashboard
         totalEmployees={allUsers}
@@ -143,9 +153,17 @@ export default async function Dashboard({ searchParams }: { searchParams: { erro
   }
 
   if (u.role === "MANAGER") {
+    // Primary reports + co-managed + RDB department-mates
+    const managedIds = await getManagedEmployeeIds(u.id);
+
     const [teamAssignments, ownAssignments] = await Promise.all([
       db.assignment.findMany({
-        where: { managerId: u.id },
+        where: {
+          OR: [
+            { managerId: u.id },
+            { employeeId: { in: managedIds } },
+          ],
+        },
         include: { employee: true, cycle: true, template: true, manager: true },
         orderBy: { createdAt: "desc" },
       }),
@@ -159,8 +177,28 @@ export default async function Dashboard({ searchParams }: { searchParams: { erro
     const done = teamAssignments.filter((a) => a.state === "FINALIZED").length;
     const ownPending = ownAssignments.filter((a) => a.state === "SELF_ASSESS").length;
 
+    // 1:1s the manager runs (or that involve their managed employees) — show next 5
+    const teamEmployeeIds = Array.from(new Set(teamAssignments.map((a) => a.employeeId)));
+    const oneOnOnes = await db.oneOnOne.findMany({
+      where: {
+        OR: [
+          { managerId: u.id },
+          ...(teamEmployeeIds.length > 0 ? [{ employeeId: { in: teamEmployeeIds } }] : []),
+        ],
+      },
+      include: { employee: { select: { id: true, firstName: true, lastName: true, position: true } } },
+      orderBy: { scheduledAt: "asc" },
+    });
+    const now = new Date();
+    const upcoming1on1s = oneOnOnes
+      .filter((o) => !o.completedAt)
+      .sort((a, b) => +new Date(a.scheduledAt) - +new Date(b.scheduledAt));
+    const next1on1s = upcoming1on1s.slice(0, 5);
+    const overdue1on1Count = upcoming1on1s.filter((o) => new Date(o.scheduledAt) < now).length;
+
     return (
       <div>
+        <DashboardGreeting firstName={u.name?.split(" ")[0] ?? ""} />
         {errorMsg && <div className="card mb-4 border-amber-300 bg-amber-50 text-amber-800 text-sm">{errorMsg}</div>}
         <PageHeader title="Manager Dashboard" subtitle="Your team's evaluations and your own performance reviews" />
         <PendingBanner
@@ -178,15 +216,15 @@ export default async function Dashboard({ searchParams }: { searchParams: { erro
           />
         )}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <KpiTile icon="👥" iconBg="bg-blue-50 text-blue-600"     label="Team Size"        value={new Set(teamAssignments.map((a) => a.employeeId)).size} />
-          <KpiTile icon="📋" iconBg="bg-purple-50 text-purple-600" label="Team Evaluations" value={teamAssignments.length} sub={`${done} finalized`} />
-          <KpiTile icon="⏳" iconBg="bg-amber-50 text-amber-600"    label="Pending My Review" value={pending} sub="awaiting your input" />
-          <KpiTile icon="🪞" iconBg="bg-emerald-50 text-emerald-600" label="My Own PMFs"      value={ownAssignments.length} sub="for me to fill out" />
+          <KpiTile icon={<Icon.Users size={20} />} iconBg="bg-blue-50 text-blue-600"     label="Team Size"        value={new Set(teamAssignments.map((a) => a.employeeId)).size} />
+          <KpiTile icon={<Icon.Clipboard size={20} />} iconBg="bg-purple-50 text-purple-600" label="Team Evaluations" value={teamAssignments.length} sub={`${done} finalized`} />
+          <KpiTile icon={<Icon.Calendar size={20} />} iconBg="bg-amber-50 text-amber-600"    label="Pending My Review" value={pending} sub="awaiting your input" />
+          <KpiTile icon={<Icon.User size={20} />} iconBg="bg-emerald-50 text-emerald-600" label="My Own PMFs"      value={ownAssignments.length} sub="for me to fill out" />
         </div>
         {ownAssignments.length > 0 && (
           <div className="card-flush mb-6">
             <div className="px-5 py-4 border-b border-gray-100">
-              <h3 className="font-semibold text-gray-900">🪞 My Own Evaluations</h3>
+              <h3 className="font-semibold text-gray-900 inline-flex items-center gap-1"><Icon.User size={16} /> My Own Evaluations</h3>
               <p className="text-xs text-gray-500 mt-0.5">Evaluations assigned to you by your supervisor.</p>
             </div>
             <div className="px-5 py-4">
@@ -194,9 +232,66 @@ export default async function Dashboard({ searchParams }: { searchParams: { erro
             </div>
           </div>
         )}
+
+        {/* Upcoming 1:1s — keeps manager check-ins front-and-center */}
+        {next1on1s.length > 0 && (
+          <div className="card-flush mb-6">
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <h3 className="font-semibold text-gray-900 inline-flex items-center gap-1">
+                  <Icon.Calendar size={16} /> Upcoming 1:1s
+                </h3>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {overdue1on1Count > 0
+                    ? <><strong className="text-red-700">{overdue1on1Count} overdue.</strong> Your next scheduled check-ins.</>
+                    : "Your next scheduled check-ins with your team."}
+                </p>
+              </div>
+            </div>
+            <ul className="divide-y divide-gray-100">
+              {next1on1s.map((o: any) => {
+                const dt = new Date(o.scheduledAt);
+                const overdue = dt < now;
+                return (
+                  <li key={o.id} className="px-5 py-3 flex items-center justify-between hover:bg-gray-50">
+                    <div className="min-w-0">
+                      <div className="font-semibold text-gray-800 truncate">{o.employee.firstName} {o.employee.lastName}</div>
+                      <div className="text-xs text-gray-500 truncate">{o.employee.position ?? "—"}</div>
+                      <div className={`text-xs mt-0.5 ${overdue ? "text-red-700 font-semibold" : "text-gray-500"}`}>
+                        {dt.toLocaleString()}{overdue && " · overdue"}
+                      </div>
+                    </div>
+                    <a href={`/team/${o.employee.id}`} className="btn btn-secondary text-xs inline-flex items-center gap-1">
+                      <Icon.Calendar size={12} /> Open
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
+        {/* Team Members card — tick to bulk-flag misassignments; row link goes to 1:1 notes */}
+        {(() => {
+          const uniqueEmployees = Array.from(
+            new Map(teamAssignments.map((a) => [a.employee.id, a.employee])).values()
+          );
+          if (uniqueEmployees.length === 0) return null;
+          return (
+            <TeamMembersCard
+              members={uniqueEmployees.map((e: any) => ({
+                id: e.id,
+                firstName: e.firstName,
+                lastName: e.lastName,
+                position: e.position,
+                department: e.department,
+              }))}
+            />
+          );
+        })()}
+
         <div className="card-flush">
           <div className="px-5 py-4 border-b border-gray-100">
-            <h3 className="font-semibold text-gray-900">👥 Team Evaluations</h3>
+            <h3 className="font-semibold text-gray-900 inline-flex items-center gap-1"><Icon.Users size={16} /> Team Evaluations</h3>
             <p className="text-xs text-gray-500 mt-0.5">Direct reports waiting for your review or already complete.</p>
           </div>
           <div className="px-5 py-4">
@@ -216,6 +311,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { erro
   const latest = assignments.find((a) => a.overallScore != null);
   return (
     <div>
+      <DashboardGreeting firstName={u.name?.split(" ")[0] ?? ""} />
       {errorMsg && <div className="card mb-4 border-amber-300 bg-amber-50 text-amber-800 text-sm">{errorMsg}</div>}
       <PageHeader title="My Dashboard" subtitle="Your performance evaluations and feedback history" />
       <PendingBanner
@@ -225,9 +321,9 @@ export default async function Dashboard({ searchParams }: { searchParams: { erro
           .map((a) => bannerItem(a, `${a.cycle.name} · ${a.template.name}`))}
       />
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <KpiTile icon="📋" iconBg="bg-blue-50 text-blue-600"       label="Total PMFs"   value={assignments.length} sub="lifetime" />
-        <KpiTile icon="⏳" iconBg="bg-amber-50 text-amber-600"     label="In Progress"  value={assignments.filter((a) => a.state !== "FINALIZED").length} sub="awaiting steps" />
-        <KpiTile icon="⭐" iconBg="bg-emerald-50 text-emerald-600" label="Latest Score" value={latest?.overallScore?.toFixed(1) ?? "N/A"} sub="weighted overall" />
+        <KpiTile icon={<Icon.Clipboard size={20} />} iconBg="bg-blue-50 text-blue-600"       label="Total PMFs"   value={assignments.length} sub="lifetime" />
+        <KpiTile icon={<Icon.Calendar size={20} />} iconBg="bg-amber-50 text-amber-600"     label="In Progress"  value={assignments.filter((a) => a.state !== "FINALIZED").length} sub="awaiting steps" />
+        <KpiTile icon={<Icon.Star size={20} />} iconBg="bg-emerald-50 text-emerald-600" label="Latest Score" value={latest?.overallScore?.toFixed(1) ?? "N/A"} sub="weighted overall" />
       </div>
       <div className="card-flush">
         <div className="px-5 py-4 border-b border-gray-100">
@@ -242,7 +338,7 @@ export default async function Dashboard({ searchParams }: { searchParams: { erro
   );
 }
 
-function KpiTile({ icon, iconBg, label, value, sub }: { icon: string; iconBg: string; label: string; value: any; sub?: string }) {
+function KpiTile({ icon, iconBg, label, value, sub }: { icon: React.ReactNode; iconBg: string; label: string; value: any; sub?: string }) {
   return (
     <div className="kpi-card">
       <div className="flex items-start gap-3">

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Icon } from "./Icons";
 
 type T = { id: string; name: string; type: string };
 type C = { id: string; name: string };
@@ -27,20 +28,20 @@ export function AdminTools({
     const res = await fetch("/api/cron/reminders", { method: "POST" });
     if (res.ok) {
       const d = await res.json();
-      setReminderState(`✓ Sent ${d.sent} reminder(s) (scanned ${d.scanned})`);
-    } else setReminderState("✗ " + (await res.text()));
+      setReminderState(`Sent ${d.sent} reminder(s) (scanned ${d.scanned})`);
+    } else setReminderState("Error: " + (await res.text()));
     setTimeout(() => setReminderState(""), 6000);
   }
 
   return (
     <div className="card mb-6">
-      <h3 className="section-header">⚡ Quick Actions</h3>
+      <h3 className="section-header inline-flex items-center gap-1"><Icon.Sparkle size={16} /> Quick Actions</h3>
       <div className="flex flex-wrap gap-2">
-        <button className="btn btn-primary" onClick={() => setMode("assign")}>📋 Bulk Assign Evaluations</button>
-        <button className="btn btn-primary" onClick={() => setMode("cycle")}>📅 + New Cycle</button>
-        <button className="btn btn-secondary" onClick={() => setMode("export")}>📊 Export Cycle (CSV)</button>
-        <button className="btn btn-secondary" onClick={() => { setImportResult(null); setMode("import"); }}>📥 Import Employees (CSV)</button>
-        <button className="btn btn-secondary" onClick={sendReminders}>📧 Send Reminders Now</button>
+        <button className="btn btn-primary" onClick={() => setMode("assign")}><span className="inline-flex items-center gap-1"><Icon.Clipboard size={14} /> Bulk Assign Evaluations</span></button>
+        <button className="btn btn-primary" onClick={() => setMode("cycle")}><span className="inline-flex items-center gap-1"><Icon.Calendar size={14} /> + New Cycle</span></button>
+        <button className="btn btn-secondary" onClick={() => setMode("export")}><span className="inline-flex items-center gap-1"><Icon.BarChart size={14} /> Export Cycle (CSV)</span></button>
+        <button className="btn btn-secondary" onClick={() => { setImportResult(null); setMode("import"); }}><span className="inline-flex items-center gap-1"><Icon.Download size={14} /> Import Employees (CSV)</span></button>
+        <button className="btn btn-secondary" onClick={sendReminders}><span className="inline-flex items-center gap-1"><Icon.Mail size={14} /> Send Reminders Now</span></button>
         {reminderState && <span className="text-sm self-center text-gray-600">{reminderState}</span>}
       </div>
 
@@ -77,7 +78,7 @@ function ExportCycleForm({ cycles, onClose }: any) {
       <div className="text-xs text-gray-500">Downloads a CSV with all employees × sections × scores. Opens cleanly in Excel or Google Sheets.</div>
       <div className="flex justify-end gap-2">
         <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
-        <a className="btn btn-primary" href={`/api/export/cycle/${cycleId}`}>⬇ Download CSV</a>
+        <a className="btn btn-primary" href={`/api/export/cycle/${cycleId}`}><span className="inline-flex items-center gap-1"><Icon.Download size={14} /> Download CSV</span></a>
       </div>
     </div>
   );
@@ -99,10 +100,10 @@ function ImportUsersForm({ result, runImport, onClose }: any) {
     <form onSubmit={submit} className="mt-4 p-4 bg-gray-50 rounded-lg space-y-3">
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div className="text-sm">
-          <p className="font-medium text-gray-700">📋 New to bulk import?</p>
+          <p className="font-medium text-gray-700 inline-flex items-center gap-1"><Icon.Clipboard size={14} /> New to bulk import?</p>
           <p className="text-xs text-gray-500 mt-0.5">Download our template, fill it in, then upload below.</p>
         </div>
-        <a href="/employee-import-template.csv" download="PMF-Employee-Import-Template.csv" className="btn btn-secondary text-xs">⬇ Download CSV Template</a>
+        <a href="/employee-import-template.csv" download="PMF-Employee-Import-Template.csv" className="btn btn-secondary text-xs"><span className="inline-flex items-center gap-1"><Icon.Download size={12} /> Download CSV Template</span></a>
       </div>
       <div>
         <label className="label">CSV file</label>
@@ -123,7 +124,7 @@ function ImportUsersForm({ result, runImport, onClose }: any) {
       </div>
       {result && (
         <div className={`text-sm p-3 rounded ${result.errors?.length ? "bg-amber-50 text-amber-800 border border-amber-200" : "bg-emerald-50 text-emerald-800 border border-emerald-200"}`}>
-          ✓ Created <b>{result.created}</b> user(s).
+          <span className="inline-flex items-center gap-1"><Icon.Check size={14} className="text-emerald-600" /> Created <b>{result.created}</b> user(s).</span>
           {result.errors?.length > 0 && (
             <>
               <div className="mt-2 font-semibold">{result.errors.length} row(s) skipped:</div>
@@ -202,7 +203,7 @@ function BulkAssignForm({ templates, cycles, departments, onClose, onDone }: any
         <div className={`text-sm p-2 rounded ${result.error ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"}`}>
           {result.error
             ? <>Error: {result.error}</>
-            : <>✓ Created <b>{result.created}</b> assignment(s). Skipped: {result.skipped?.length ?? 0}{result.skipped?.length ? ` (${result.skipped.slice(0, 3).join(", ")}${result.skipped.length > 3 ? "…" : ""})` : ""}.</>}
+            : <span className="inline-flex items-center gap-1"><Icon.Check size={14} className="text-emerald-600" /> Created <b>{result.created}</b> assignment(s). Skipped: {result.skipped?.length ?? 0}{result.skipped?.length ? ` (${result.skipped.slice(0, 3).join(", ")}${result.skipped.length > 3 ? "…" : ""})` : ""}.</span>}
         </div>
       )}
       <div className="flex justify-end gap-2">
@@ -244,7 +245,7 @@ function NewCycleForm({ onClose, onDone }: any) {
         <div><label className="label">Due Date</label><input className="input" type="date" required value={dueDate} onChange={(e) => setDue(e.target.value)} /></div>
       </div>
       <div className="pt-2 border-t">
-        <div className="text-xs font-semibold text-gray-600 mb-2">🔄 AUTO-ASSIGN ON HIRE DATE</div>
+        <div className="text-xs font-semibold text-gray-600 mb-2 inline-flex items-center gap-1"><Icon.Calendar size={12} /> AUTO-ASSIGN ON HIRE DATE</div>
         <label className="flex items-center gap-2 text-sm mb-1"><input type="checkbox" checked={autoReg} onChange={(e) => setAutoReg(e.target.checked)} /> Auto-assign all Regular employees to this cycle (daily cron)</label>
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={autoProb} onChange={(e) => setAutoProb(e.target.checked)} /> Auto-assign Probationary hires at ~3-month mark</label>
       </div>

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { getSessionUser } from "@/lib/rbac";
+import { getSessionUser, isManagerOf } from "@/lib/rbac";
 import { audit } from "@/lib/auth";
 import { notify } from "@/lib/notifications";
 
@@ -8,8 +8,8 @@ async function canAccess(actor: { id: string; role: string }, employeeId: string
   if (actor.role === "HR_ADMIN") return true;
   if (actor.id === employeeId) return true;
   if (actor.role === "MANAGER") {
-    const e = await db.user.findUnique({ where: { id: employeeId } });
-    return e?.managerId === actor.id;
+    // Primary manager, co-manager, or RDB-department manager
+    return await isManagerOf(actor.id, employeeId);
   }
   return false;
 }
