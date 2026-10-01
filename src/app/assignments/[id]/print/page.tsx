@@ -204,7 +204,7 @@ export default async function PrintView({ params }: { params: { id: string } }) 
                 <img src={full.employeeSignature} alt="Employee signature" style={{ maxHeight: 60, objectFit: "contain" }} />
               ) : <div style={{ height: 60 }} />}
               <div style={{ borderTop: "1px solid #000", paddingTop: 4, fontSize: 10 }}>
-                <b>{full.employee.firstName} {full.employee.lastName}</b><br />
+                <b>{full.employeeSignatureName ?? `${full.employee.firstName} ${full.employee.lastName}`}</b><br />
                 Employee Signature · {full.employeeSignedAt ? new Date(full.employeeSignedAt).toLocaleDateString() : "—"}
               </div>
             </div>
@@ -213,7 +213,7 @@ export default async function PrintView({ params }: { params: { id: string } }) 
                 <img src={full.managerSignature} alt="Manager signature" style={{ maxHeight: 60, objectFit: "contain" }} />
               ) : <div style={{ height: 60 }} />}
               <div style={{ borderTop: "1px solid #000", paddingTop: 4, fontSize: 10 }}>
-                <b>{full.manager.firstName} {full.manager.lastName}</b><br />
+                <b>{full.managerSignatureName ?? `${full.manager.firstName} ${full.manager.lastName}`}</b><br />
                 Supervisor Signature · {full.managerSignedAt ? new Date(full.managerSignedAt).toLocaleDateString() : "—"}
               </div>
             </div>
@@ -222,7 +222,7 @@ export default async function PrintView({ params }: { params: { id: string } }) 
                 <img src={full.hrSignature} alt="HR signature" style={{ maxHeight: 60, objectFit: "contain" }} />
               ) : <div style={{ height: 60 }} />}
               <div style={{ borderTop: "1px solid #000", paddingTop: 4, fontSize: 10 }}>
-                HR Admin<br />
+                <b>{full.hrSignatureName ?? "HR Admin"}</b><br />
                 HR Signature · {full.hrSignedAt ? new Date(full.hrSignedAt).toLocaleDateString() : "—"}
               </div>
             </div>
